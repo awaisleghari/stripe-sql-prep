@@ -39,19 +39,41 @@ npm run test:e2e
 ```
 
 ## Deploy to Cloudflare Pages
-This is a static SPA — no env vars, no secrets, no backend.
+This is a static SPA — no backend, no env vars, no secrets.
 
+**Option A — connect the GitHub repo (recommended, auto-deploys on push):**
 1. Push the repo to GitHub.
-2. Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git**.
+2. Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git** → pick this repo.
 3. Build settings:
    - **Framework preset:** Vite
    - **Build command:** `npm run build`
    - **Build output directory:** `dist`
-   - **Node version:** 20 (set `NODE_VERSION=20` if needed)
-4. Deploy. Every push to the production branch auto-deploys; PRs get preview URLs.
+4. **Save and Deploy.** Every push to `main` ships to production; every PR gets a preview URL.
 
-Because routing is in-app state (not URL paths), no SPA redirect rule is required.
-If you later switch to URL-based routes, add a `public/_redirects` file with `/*  /index.html  200`.
+Node version is pinned to 20 via `.nvmrc` (Cloudflare reads it automatically). If a build ever
+uses the wrong Node, add an environment variable `NODE_VERSION = 20` in the Pages project settings.
+
+**Option B — deploy from your machine (Wrangler CLI):**
+```bash
+npm run build
+npx wrangler pages deploy dist --project-name=stripe-sql-prep
+```
+(First run prompts a browser login. No `wrangler.toml` needed.)
+
+**Notes**
+- Caching: `public/_headers` fingerprinted assets are cached immutably for a year, while
+  `index.html` is always revalidated so new deploys appear immediately.
+- Routing is in-app state (not URL paths), so **no SPA redirect rule is required**. If you later
+  add URL-based routes, create `public/_redirects` with `/*  /index.html  200`.
+- CI: `.github/workflows/ci.yml` runs typecheck + tests + build on every push/PR as a quality gate.
+  Cloudflare performs the actual deploy, so no API tokens or secrets live in the repo.
+
+## Deploy checklist
+- [ ] `npm run build` succeeds locally and produces `dist/`
+- [ ] `npm run test` is green
+- [ ] repo pushed to GitHub
+- [ ] Cloudflare Pages project created with build command `npm run build` and output dir `dist`
+- [ ] first deploy succeeds and the live URL loads the dashboard
 
 ## Migration status
 - **Repo-1:** scaffold, types, store, sample module + sample ladder, tests, deploy path. ✅
@@ -59,4 +81,4 @@ If you later switch to URL-based routes, add a `public/_redirects` file with `/*
 - **Repo-3 (done):** all 9 SQL learning modules migrated with full pedagogy — concept, Python analogy, reasoning framework, multiple Predict/Debug drills, laddered exercises, 5-question quiz, mistakes/edges, interview script + follow-up, confidence & completion gate. ✅
 - **Repo-4 (done):** the standalone pages — Mock interview (with rubric self-scoring), Panic / final-review sheet, and the Data-Reasoning → SQL lookup. (Practice Gym parity was already achieved in Repo-1–2.) ✅
 - **Repo-5 (done):** dashboard upgrade — blended readiness (foundation + practice + simulation), skill coverage by category, and weak-area coaching nudges that route you to the right next drill. The top-bar readiness ring now reflects the blended score. ✅
-- **Repo-6:** Cloudflare CI finalisation.
+- **Repo-6 (done):** Cloudflare deploy finalised — Node pinned via `.nvmrc`, asset caching via `public/_headers`, a GitHub Actions CI quality gate, and a full deploy walkthrough + checklist. The repo is at feature parity with the original app and ready to ship. ✅
