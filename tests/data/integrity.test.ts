@@ -4,6 +4,10 @@ import { PROBLEMS, LADDERS, getProblem } from '@/data/gym';
 import { SCHEMA } from '@/data/schema';
 import { RESOURCES, RESOURCE_MAP } from '@/data/resources';
 import { CAST } from '@/data/cast';
+import { PYSQL } from '@/data/pysql';
+import { MOCKS } from '@/data/mock';
+import { PANIC } from '@/data/panic';
+import { RUBRICS } from '@/data/rubrics';
 import { TAG_COLORS, DIFFICULTY_META, PRIORITY_META } from '@/utils/formatters';
 import { PANDAS_PATTERN, missingGuidedFields } from '@/utils/validation';
 import type { Mode } from '@/types';
@@ -88,6 +92,18 @@ describe('module data integrity', () => {
       expect(m.debugs.length, `debugs for ${m.id}`).toBeGreaterThanOrEqual(1);
       expect(m.exercises.length, `exercises for ${m.id}`).toBeGreaterThanOrEqual(3);
     }
+  });
+});
+
+describe('standalone pages', () => {
+  it('has the migrated reasoning rows, mock components, and panic sections', () => {
+    expect(PYSQL.length).toBe(16);
+    expect(PANIC.length).toBe(5);
+    expect(MOCKS[0].components.length).toBe(6);
+  });
+  it('every mock component references an existing rubric', () => {
+    const ids = new Set(RUBRICS.map((r) => r.id));
+    for (const c of MOCKS[0].components) expect(ids.has(c.rubric), `rubric ${c.rubric}`).toBe(true);
   });
 });
 

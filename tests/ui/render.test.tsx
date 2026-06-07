@@ -28,4 +28,15 @@ describe('app renders core flows', () => {
     expect(screen.getByText('Recognize the 0/1 success flag')).toBeTruthy();
     expect(screen.getByText(/What you need to do/)).toBeTruthy();
   });
+
+  it('renders the Data-Reasoning, Mock, and Panic pages', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /Data reasoning/ }));
+    expect(screen.getByText(/16 patterns/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Mock interviews/ }));
+    expect(screen.getByText(/How to run this like a real interview/)).toBeTruthy();
+    expect(screen.getByText(/Component 1/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Panic sheet/ }));
+    expect(screen.getByText('The 7-step loop (say it out loud)')).toBeTruthy();
+  });
 });

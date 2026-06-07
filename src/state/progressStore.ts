@@ -34,6 +34,7 @@ export function freshState(): ProgressState {
     modules: {},
     problems: {},
     gym: { tab: 'path', ladder: 'cond', focus: null, last: null, filters: {} },
+    mock: {},
   };
 }
 
@@ -110,6 +111,10 @@ export function focusProblem(id: ProblemId, ladder: string): void {
 }
 export function setFilters(filters: ProgressState['gym']['filters']): void {
   commit({ ...state, gym: { ...state.gym, filters } });
+}
+export function setMockScore(componentKey: string, criterionIndex: number, score: number): void {
+  const comp = { ...(state.mock[componentKey] ?? {}), [criterionIndex]: score };
+  commit({ ...state, mock: { ...state.mock, [componentKey]: comp } });
 }
 
 /** React binding. */

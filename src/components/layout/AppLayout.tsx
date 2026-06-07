@@ -9,6 +9,9 @@ const TITLES: Record<Route, string> = {
   gym: 'Practice Gym',
   schema: 'Schema explorer',
   resources: 'Resources',
+  reason: 'Data reasoning → SQL',
+  mock: 'Mock interviews',
+  panic: 'Panic sheet',
 };
 
 export function AppLayout({ route, readiness, children }: { route: Route; readiness: number; children: React.ReactNode }) {

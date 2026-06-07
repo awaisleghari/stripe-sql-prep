@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  getState, __resetForTests, setProblemStatus, focusProblem, setGymTab, answerQuiz, setModuleComplete, setRoute,
+  getState, __resetForTests, setProblemStatus, focusProblem, setGymTab, answerQuiz, setModuleComplete, setRoute, setMockScore,
 } from '@/state/progressStore';
 
 beforeEach(() => __resetForTests());
@@ -41,5 +41,13 @@ describe('progress store', () => {
     setGymTab('browse');
     expect(getState().route).toBe('gym');
     expect(getState().gym.tab).toBe('browse');
+  });
+
+  it('records mock self-scores per component/criterion', () => {
+    setMockScore('m1_0', 0, 2);
+    setMockScore('m1_0', 1, 1);
+    expect(getState().mock['m1_0']).toMatchObject({ 0: 2, 1: 1 });
+    const total = Object.values(getState().mock['m1_0']).reduce((a, b) => a + b, 0);
+    expect(total).toBe(3);
   });
 });

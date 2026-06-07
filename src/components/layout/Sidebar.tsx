@@ -6,7 +6,10 @@ const ITEMS: { route: Route; label: string }[] = [
   { route: 'dashboard', label: '🏠 Dashboard' },
   { route: 'learn', label: '📚 Learning path' },
   { route: 'gym', label: '🏋️ Practice Gym' },
+  { route: 'reason', label: '🔁 Data reasoning → SQL' },
+  { route: 'mock', label: '🎯 Mock interviews' },
   { route: 'schema', label: '🗄 Schema explorer' },
+  { route: 'panic', label: '🚑 Panic sheet' },
   { route: 'resources', label: '🔗 Resources' },
 ];
 

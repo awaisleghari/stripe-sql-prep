@@ -7,6 +7,9 @@ import { Resources } from '@/components/dashboard/Resources';
 import { ModuleView } from '@/components/learning/ModuleView';
 import { GymView } from '@/components/gym/GymView';
 import { SchemaExplorer } from '@/components/schema/SchemaExplorer';
+import { MockView } from '@/components/pages/MockView';
+import { PanicSheet } from '@/components/pages/PanicSheet';
+import { ReasoningView } from '@/components/pages/ReasoningView';
 
 /** Tiny state-driven router (no react-router dependency for a 5-route SPA). */
 export default function App() {
@@ -20,6 +23,9 @@ export default function App() {
       {state.route === 'gym' && <GymView />}
       {state.route === 'schema' && <SchemaExplorer />}
       {state.route === 'resources' && <Resources />}
+      {state.route === 'reason' && <ReasoningView />}
+      {state.route === 'mock' && <MockView />}
+      {state.route === 'panic' && <PanicSheet />}
     </AppLayout>
   );
 }

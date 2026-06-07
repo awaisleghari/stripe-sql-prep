@@ -6,3 +6,4 @@ export * from './schema';
 export * from './progress';
 export * from './resource';
 export * from './rubric';
+export * from './pages';

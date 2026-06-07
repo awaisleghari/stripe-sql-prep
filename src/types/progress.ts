@@ -2,7 +2,7 @@ import type { ModuleId } from './module';
 import type { LadderId, } from './ladder';
 import type { ProblemId, Difficulty, Priority, Mode } from './problem';
 
-export type Route = 'dashboard' | 'learn' | 'gym' | 'schema' | 'resources';
+export type Route = 'dashboard' | 'learn' | 'gym' | 'schema' | 'resources' | 'mock' | 'panic' | 'reason';
 export type GymTab = 'path' | 'focus' | 'browse' | 'review';
 
 export interface GymFilters {
@@ -49,4 +49,6 @@ export interface ProgressState {
   modules: Record<ModuleId, ModuleProgress>;
   problems: Record<ProblemId, ProblemProgress>;
   gym: GymState;
+  /** mock self-scores: componentKey -> (criterionIndex -> 0|1|2) */
+  mock: Record<string, Record<number, number>>;
 }
