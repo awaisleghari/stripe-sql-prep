@@ -58,5 +58,5 @@ If you later switch to URL-based routes, add a `public/_redirects` file with `/*
 - **Repo-2 (done):** full schema (11 tables), cast, resources (+map), rubrics, and **all 68 problems** migrated into typed per-ladder category files; data-integrity tests scaled to the full set. ✅
 - **Repo-3 (done):** all 9 SQL learning modules migrated with full pedagogy — concept, Python analogy, reasoning framework, multiple Predict/Debug drills, laddered exercises, 5-question quiz, mistakes/edges, interview script + follow-up, confidence & completion gate. ✅
 - **Repo-4 (done):** the standalone pages — Mock interview (with rubric self-scoring), Panic / final-review sheet, and the Data-Reasoning → SQL lookup. (Practice Gym parity was already achieved in Repo-1–2.) ✅
-- **Repo-5:** dashboard blended-readiness polish.
+- **Repo-5 (done):** dashboard upgrade — blended readiness (foundation + practice + simulation), skill coverage by category, and weak-area coaching nudges that route you to the right next drill. The top-bar readiness ring now reflects the blended score. ✅
 - **Repo-6:** Cloudflare CI finalisation.

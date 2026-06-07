@@ -1,4 +1,4 @@
-import type { Ladder, ProgressState, ProblemId, Problem } from '@/types';
+import type { Ladder, ProgressState, ProblemId, Problem, Mode } from '@/types';
 
 export type ProblemStatus = 'notstarted' | 'attempted' | 'completed' | 'review';
 
@@ -47,4 +47,26 @@ export function bossReady(state: ProgressState, ladder: Ladder): boolean {
   const buildup = ladder.problemIds.slice(0, -1);
   const done = buildup.filter((id) => problemStatus(state, id) === 'completed').length;
   return done >= Math.min(5, buildup.length);
+}
+
+export interface CategoryCoverage {
+  mode: Mode;
+  total: number;
+  completed: number;
+  attempted: number;
+  pct: number;
+}
+
+/** Coverage per implementation mode (SQL, Python, Product, …). Pure. */
+export function categoryCoverage(state: ProgressState, problems: Problem[]): CategoryCoverage[] {
+  const modes = [...new Set(problems.map((p) => p.mode))];
+  return modes.map((mode) => {
+    const list = problems.filter((p) => p.mode === mode);
+    const completed = list.filter((p) => problemStatus(state, p.id) === 'completed').length;
+    const attempted = list.filter((p) => {
+      const st = problemStatus(state, p.id);
+      return st === 'attempted' || st === 'review';
+    }).length;
+    return { mode, total: list.length, completed, attempted, pct: list.length ? Math.round((completed / list.length) * 100) : 0 };
+  });
 }

@@ -1,4 +1,4 @@
-import type { Ladder, Problem, ProblemId, ProgressState } from '@/types';
+import type { Ladder, Problem, ProblemId, ProgressState, Mode } from '@/types';
 import { problemStatus } from '@/state/selectors';
 
 export function ladderOf(ladders: Ladder[], id: ProblemId): Ladder | undefined {
@@ -36,4 +36,10 @@ export function whatTrains(p: Problem): string {
     return s.length > 118 ? s.slice(0, 115) + '…' : s.endsWith('.') ? s : s + '.';
   }
   return '';
+}
+
+/** First not-completed problem of a given implementation mode. */
+export function nextInCategory(problems: Problem[], state: ProgressState, mode: Mode): ProblemId | null {
+  const p = problems.find((x) => x.mode === mode && problemStatus(state, x.id) !== 'completed');
+  return p ? p.id : null;
 }

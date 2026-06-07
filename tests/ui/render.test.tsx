@@ -8,9 +8,10 @@ beforeEach(() => __resetForTests());
 afterEach(cleanup);
 
 describe('app renders core flows', () => {
-  it('renders the dashboard with the readiness label', () => {
+  it('renders the dashboard with blended readiness and category coverage', () => {
     render(<App />);
     expect(screen.getByText('Stripe interview readiness')).toBeTruthy();
+    expect(screen.getByText('Skill coverage by category')).toBeTruthy();
   });
 
   it('renders the sample module (concept + quiz) on the learning path', () => {
