@@ -11,7 +11,9 @@ export default defineConfig({
   build: { outDir: 'dist', sourcemap: true },
   test: {
     // Vitest unit tests run in Node. The store is written to be node-safe (no jsdom needed).
+    // UI render tests opt into jsdom per-file via `// @vitest-environment jsdom`.
     environment: 'node',
+    setupFiles: ['./tests/setup.ts'],
     include: ['tests/**/*.test.{ts,tsx}'],
     exclude: ['tests/e2e/**'],
   },

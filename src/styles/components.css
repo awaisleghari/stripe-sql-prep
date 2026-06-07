@@ -1,5 +1,9 @@
-/* Reusable component classes (local; no external UI library). */
-.card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+/* Reusable component classes for the remaining custom-CSS views.
+   Ant Design v5 powers the app shell and the learning modules; these classes back
+   the views not yet migrated (gym, dashboard, pages) and the SQL CodeBlock. */
+.card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); margin-bottom: 16px; transition: border-color .16s ease; }
+.card:hover { border-color: #33405a; }
+.card:last-child { margin-bottom: 0; }
 .card-body { padding: 16px 18px; }
 
 .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; border: 1px solid transparent; line-height: 1.6; }
@@ -12,6 +16,12 @@
 .tag.volcano { color: #f7b6a4; background: rgba(240,135,107,.12); border-color: rgba(240,135,107,.3); }
 
 .pill-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+/* Sidebar brand block (Ant Layout.Sider header) */
+.brand-block { display: flex; align-items: center; gap: 11px; padding: 18px 18px 14px; border-bottom: 1px solid var(--split); }
+.brand-mark { width: 32px; height: 32px; border-radius: 9px; flex: 0 0 auto; background: linear-gradient(135deg, #6e8efb, #46c98b); display: flex; align-items: center; justify-content: center; color: #0c0f17; font-weight: 800; font-size: 16px; box-shadow: 0 4px 14px -2px rgba(110, 142, 251, .5); }
+.brand-name { font-weight: 650; font-size: 14px; color: var(--t-1); letter-spacing: .1px; }
+.brand-sub { font-size: 11px; color: var(--t-3); margin-top: 2px; }
 
 .btn { font-family: var(--font); font-size: 13px; font-weight: 600; color: var(--t-1); background: var(--fill); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 14px; cursor: pointer; transition: .15s; }
 .btn:hover { border-color: var(--c-primary); }
@@ -36,7 +46,17 @@ details.collapse > summary::before { content: '▸ '; color: var(--t-3); }
 details.collapse[open] > summary::before { content: '▾ '; }
 details.collapse > .collapse-body { padding: 0 13px 13px; }
 
-.code { background: #0b0e15; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; color: #cdd6e6; white-space: pre; }
+.code-wrap { position: relative; margin: 12px 0; }
+.code { background: #0a0d14; border: 1px solid #1d2533; border-radius: var(--radius); padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 12.8px; line-height: 1.7; color: #dbe3ee; white-space: pre; }
+.code-copy { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); color: #aeb8c6; border-radius: 6px; padding: 3px 10px; font-size: 11.5px; cursor: pointer; transition: .15s; font-family: var(--font); z-index: 1; }
+.code-copy:hover { background: rgba(255,255,255,.12); color: #fff; }
+.code-copy.done { color: var(--c-success); border-color: var(--c-success); }
+/* SQL syntax-highlight tokens (see src/utils/highlightSql.ts) */
+.hl-kw { color: var(--hl-kw); }
+.hl-fn { color: var(--hl-fn); }
+.hl-str { color: var(--hl-str); }
+.hl-num { color: var(--hl-num); }
+.hl-cm { color: var(--hl-cm); font-style: italic; }
 
 .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--split); overflow-x: auto; }
 .tab { padding: 11px 15px; font-size: 13.5px; color: var(--t-2); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; font-weight: 550; }

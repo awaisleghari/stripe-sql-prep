@@ -1,7 +1,9 @@
+import { Layout } from 'antd';
 import type { Route } from '@/types';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import styles from './AppLayout.module.css';
+
+const { Content } = Layout;
 
 const TITLES: Record<Route, string> = {
   dashboard: 'Dashboard',
@@ -16,12 +18,14 @@ const TITLES: Record<Route, string> = {
 
 export function AppLayout({ route, readiness, children }: { route: Route; readiness: number; children: React.ReactNode }) {
   return (
-    <div className={styles.shell}>
+    <Layout hasSider style={{ minHeight: '100vh' }}>
       <Sidebar active={route} />
-      <div className={styles.main}>
+      <Layout>
         <Topbar title={TITLES[route]} readiness={readiness} />
-        <div className={styles.content}>{children}</div>
-      </div>
-    </div>
+        <Content style={{ padding: '28px' }}>
+          <div style={{ maxWidth: 980 }}>{children}</div>
+        </Content>
+      </Layout>
+    </Layout>
   );
 }
