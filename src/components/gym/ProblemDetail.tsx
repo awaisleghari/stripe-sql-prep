@@ -81,6 +81,12 @@ export function ProblemDetail({ problem: p }: { problem: Problem }) {
       {p.verify && (
         <Collapse title="🔍 Check your work — verification & edge cases">
           <Labeled label={`Expected grain — ${p.verify.grain}`}><span className="mono">{p.verify.columns.join(', ')}</span></Labeled>
+          {p.verify.sample && (
+            <table style={{ borderCollapse: 'collapse', fontSize: 12, margin: '6px 0' }}>
+              <thead><tr>{p.verify.sample.cols.map((c) => (<th key={c} className="mono" style={{ textAlign: 'left', padding: '3px 10px 3px 0', color: 'var(--t-3)' }}>{c}</th>))}</tr></thead>
+              <tbody>{p.verify.sample.rows.map((row, ri) => (<tr key={ri}>{row.map((cell, ci) => (<td key={ci} className="mono" style={{ padding: '3px 10px 3px 0', color: 'var(--t-2)' }}>{cell}</td>))}</tr>))}</tbody>
+            </table>
+          )}
           <Labeled label="Common wrong answers"><List items={p.verify.commonWrong} /></Labeled>
           <Labeled label="Validation"><List items={p.verify.validation} /></Labeled>
           <Labeled label="Edge cases"><List items={p.verify.edgeCases} /></Labeled>

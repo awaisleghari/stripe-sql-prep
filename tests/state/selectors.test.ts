@@ -15,7 +15,7 @@ describe('selectors & navigation', () => {
   });
 
   it('ladderProgress counts completed', () => {
-    expect(ladderProgress(getState(), cond)).toMatchObject({ done: 0, total: 2 });
+    expect(ladderProgress(getState(), cond)).toMatchObject({ done: 0, total: 8 });
     setProblemStatus('ca1', 'completed');
     expect(ladderProgress(getState(), cond).done).toBe(1);
   });
@@ -30,7 +30,7 @@ describe('selectors & navigation', () => {
 
   it('next/prev navigation within a ladder', () => {
     expect(nextProblemId(cond, 'ca1')).toBe('ca2');
-    expect(nextProblemId(cond, 'ca2')).toBeNull();
+    expect(nextProblemId(cond, cond.problemIds[cond.problemIds.length - 1])).toBeNull();
     expect(prevProblemId(cond, 'ca2')).toBe('ca1');
     expect(prevProblemId(cond, 'ca1')).toBeNull();
   });

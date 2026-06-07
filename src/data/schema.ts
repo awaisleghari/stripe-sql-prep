@@ -1,90 +1,387 @@
 import type { SchemaTables } from '@/types';
 
-/**
- * Synthetic Stripe-style schema. All money is stored in CENTS.
- * balance_transactions is the ledger source of truth for net revenue.
- * (Repo-1 includes a representative subset; full migration lands in Repo-2.)
- */
+/* MIGRATED synthetic Stripe-style schema. Money is in CENTS; balance_transactions is the ledger source of truth. */
 export const SCHEMA: SchemaTables = [
   {
-    name: 'merchants',
-    grain: 'one row per merchant (Stripe account)',
-    whenToUse: 'Merchant attributes, country, platform flag. The dimension you group metrics by.',
-    joinKeys: ['merchant_id'],
-    mistake: 'Treating a platform row and its connected accounts as the same grain.',
-    columns: [
-      { name: 'merchant_id', type: 'text', note: 'PK' },
-      { name: 'name', type: 'text' },
-      { name: 'country', type: 'text', note: 'ISO-2' },
-      { name: 'is_platform', type: 'boolean' },
-      { name: 'created_at', type: 'timestamptz' },
-    ],
+    "name": "merchants",
+    "desc": "Businesses on the platform.",
+    "columns": [
+      {
+        "name": "merchant_id",
+        "type": "BIGINT PK"
+      },
+      {
+        "name": "name",
+        "type": "TEXT"
+      },
+      {
+        "name": "country",
+        "type": "CHAR(2)"
+      },
+      {
+        "name": "mcc",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ"
+      },
+      {
+        "name": "is_platform",
+        "type": "BOOLEAN"
+      }
+    ]
   },
   {
-    name: 'charges',
-    grain: 'one row per charge (payment attempt)',
-    whenToUse: 'Approval/failure rates, GPV (gross), payment-method and decline analysis.',
-    joinKeys: ['charge_id', 'merchant_id', 'customer_id'],
-    mistake: 'Using SUM(amount) as revenue — that is gross volume, not net.',
-    columns: [
-      { name: 'charge_id', type: 'text', note: 'PK' },
-      { name: 'merchant_id', type: 'text', note: 'FK -> merchants' },
-      { name: 'customer_id', type: 'text', note: 'FK -> customers' },
-      { name: 'status', type: 'text', note: 'succeeded | failed | pending' },
-      { name: 'amount', type: 'integer', note: 'CENTS' },
-      { name: 'currency', type: 'text' },
-      { name: 'payment_method', type: 'text', note: 'card | ach | ...' },
-      { name: 'card_country', type: 'text' },
-      { name: 'failure_code', type: 'text', note: 'null unless failed' },
-      { name: 'idempotency_key', type: 'text' },
-      { name: 'created_at', type: 'timestamptz' },
-    ],
+    "name": "connected_accounts",
+    "desc": "Sub-accounts under a platform (Stripe Connect).",
+    "columns": [
+      {
+        "name": "account_id",
+        "type": "BIGINT PK"
+      },
+      {
+        "name": "platform_merchant_id",
+        "type": "BIGINT → merchants"
+      },
+      {
+        "name": "country",
+        "type": "CHAR(2)"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ"
+      },
+      {
+        "name": "charges_enabled",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "payouts_enabled",
+        "type": "BOOLEAN"
+      }
+    ]
   },
   {
-    name: 'refunds',
-    grain: 'one row per refund',
-    whenToUse: 'Refund rate, refund reasons. Merchant/CS-initiated returns of funds.',
-    joinKeys: ['refund_id', 'charge_id'],
-    mistake: 'Confusing refunds (merchant-initiated) with disputes (bank chargebacks).',
-    columns: [
-      { name: 'refund_id', type: 'text', note: 'PK' },
-      { name: 'charge_id', type: 'text', note: 'FK -> charges' },
-      { name: 'amount', type: 'integer', note: 'CENTS' },
-      { name: 'reason', type: 'text' },
-      { name: 'created_at', type: 'timestamptz' },
-    ],
+    "name": "customers",
+    "desc": "Buyers, scoped to a merchant.",
+    "columns": [
+      {
+        "name": "customer_id",
+        "type": "BIGINT PK"
+      },
+      {
+        "name": "merchant_id",
+        "type": "BIGINT → merchants"
+      },
+      {
+        "name": "email",
+        "type": "TEXT"
+      },
+      {
+        "name": "country",
+        "type": "CHAR(2)"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ"
+      }
+    ]
   },
   {
-    name: 'disputes',
-    grain: 'one row per dispute (chargeback)',
-    whenToUse: 'Dispute/chargeback rate, fraud signals. Cardholder/bank-initiated.',
-    joinKeys: ['dispute_id', 'charge_id'],
-    mistake: 'Forgetting disputes arrive 30–60 days late — recent cohorts look artificially clean.',
-    columns: [
-      { name: 'dispute_id', type: 'text', note: 'PK' },
-      { name: 'charge_id', type: 'text', note: 'FK -> charges' },
-      { name: 'status', type: 'text', note: 'won | lost | under_review' },
-      { name: 'amount', type: 'integer', note: 'CENTS' },
-      { name: 'created_at', type: 'timestamptz' },
-    ],
+    "name": "charges",
+    "desc": "Every payment attempt. The workhorse table.",
+    "columns": [
+      {
+        "name": "charge_id",
+        "type": "BIGINT PK"
+      },
+      {
+        "name": "merchant_id",
+        "type": "BIGINT → merchants"
+      },
+      {
+        "name": "customer_id",
+        "type": "BIGINT → customers"
+      },
+      {
+        "name": "amount",
+        "type": "BIGINT (cents)"
+      },
+      {
+        "name": "currency",
+        "type": "CHAR(3)"
+      },
+      {
+        "name": "status",
+        "type": "'succeeded'|'failed'|'pending'"
+      },
+      {
+        "name": "captured",
+        "type": "BOOLEAN"
+      },
+      {
+        "name": "payment_method",
+        "type": "'card'|'ach'|'wallet'"
+      },
+      {
+        "name": "card_country",
+        "type": "CHAR(2)"
+      },
+      {
+        "name": "failure_code",
+        "type": "TEXT (nullable)"
+      },
+      {
+        "name": "idempotency_key",
+        "type": "TEXT"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ"
+      }
+    ]
   },
   {
-    name: 'balance_transactions',
-    grain: 'one row per money movement (ledger entry)',
-    whenToUse: 'Net revenue, fees, settlement. THE source of truth for money kept.',
-    joinKeys: ['balance_transaction_id', 'merchant_id', 'source_id'],
-    mistake: 'created_at (when it happened) vs available_on (when it settles) are different.',
-    columns: [
-      { name: 'balance_transaction_id', type: 'text', note: 'PK' },
-      { name: 'merchant_id', type: 'text', note: 'FK -> merchants' },
-      { name: 'source_id', type: 'text', note: 'charge/refund/dispute id' },
-      { name: 'type', type: 'text', note: 'charge | refund | dispute | fee | payout' },
-      { name: 'gross_amount', type: 'integer', note: 'CENTS, signed' },
-      { name: 'fee', type: 'integer', note: 'CENTS' },
-      { name: 'net_amount', type: 'integer', note: 'CENTS, signed (gross - fee)' },
-      { name: 'currency', type: 'text' },
-      { name: 'created_at', type: 'timestamptz' },
-      { name: 'available_on', type: 'timestamptz' },
-    ],
+    "name": "refunds",
+    "desc": "Merchant-initiated givebacks. Joins to a charge.",
+    "columns": [
+      {
+        "name": "refund_id",
+        "type": "BIGINT PK"
+      },
+      {
+        "name": "charge_id",
+        "type": "BIGINT → charges"
+      },
+      {
+        "name": "amount",
+        "type": "BIGINT (cents)"
+      },
+      {
+        "name": "reason",
+        "type": "'requested_by_customer'|'duplicate'|'fraudulent'"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ"
+      }
+    ]
   },
+  {
+    "name": "disputes",
+    "desc": "Bank-forced chargebacks. Arrive late.",
+    "columns": [
+      {
+        "name": "dispute_id",
+        "type": "BIGINT PK"
+      },
+      {
+        "name": "charge_id",
+        "type": "BIGINT → charges"
+      },
+      {
+        "name": "amount",
+        "type": "BIGINT (cents)"
+      },
+      {
+        "name": "reason",
+        "type": "'fraudulent'|'product_not_received'|..."
+      },
+      {
+        "name": "status",
+        "type": "'won'|'lost'|'needs_response'|'under_review'"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ (lags charge)"
+      }
+    ]
+  },
+  {
+    "name": "subscriptions",
+    "desc": "Recurring billing agreements.",
+    "columns": [
+      {
+        "name": "subscription_id",
+        "type": "BIGINT PK"
+      },
+      {
+        "name": "customer_id",
+        "type": "BIGINT → customers"
+      },
+      {
+        "name": "merchant_id",
+        "type": "BIGINT → merchants"
+      },
+      {
+        "name": "plan_id",
+        "type": "TEXT"
+      },
+      {
+        "name": "amount",
+        "type": "BIGINT (cents / period)"
+      },
+      {
+        "name": "interval",
+        "type": "'month'|'year'"
+      },
+      {
+        "name": "status",
+        "type": "'active'|'canceled'|'past_due'|'trialing'"
+      },
+      {
+        "name": "started_at",
+        "type": "TIMESTAMPTZ"
+      },
+      {
+        "name": "canceled_at",
+        "type": "TIMESTAMPTZ (nullable)"
+      }
+    ]
+  },
+  {
+    "name": "invoices",
+    "desc": "Bills generated per billing cycle.",
+    "columns": [
+      {
+        "name": "invoice_id",
+        "type": "BIGINT PK"
+      },
+      {
+        "name": "subscription_id",
+        "type": "BIGINT (nullable) → subscriptions"
+      },
+      {
+        "name": "customer_id",
+        "type": "BIGINT → customers"
+      },
+      {
+        "name": "merchant_id",
+        "type": "BIGINT → merchants"
+      },
+      {
+        "name": "amount_due",
+        "type": "BIGINT"
+      },
+      {
+        "name": "amount_paid",
+        "type": "BIGINT"
+      },
+      {
+        "name": "status",
+        "type": "'paid'|'open'|'void'|'uncollectible'"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ"
+      },
+      {
+        "name": "paid_at",
+        "type": "TIMESTAMPTZ (nullable)"
+      }
+    ]
+  },
+  {
+    "name": "balance_transactions",
+    "desc": "The LEDGER. Net revenue truly lives here.",
+    "columns": [
+      {
+        "name": "balance_transaction_id",
+        "type": "BIGINT PK"
+      },
+      {
+        "name": "merchant_id",
+        "type": "BIGINT → merchants"
+      },
+      {
+        "name": "source_id",
+        "type": "BIGINT (charge/refund/payout id)"
+      },
+      {
+        "name": "type",
+        "type": "'charge'|'refund'|'dispute'|'payout'|'fee'|'adjustment'"
+      },
+      {
+        "name": "gross_amount",
+        "type": "BIGINT"
+      },
+      {
+        "name": "fee",
+        "type": "BIGINT"
+      },
+      {
+        "name": "net_amount",
+        "type": "BIGINT"
+      },
+      {
+        "name": "currency",
+        "type": "CHAR(3)"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ"
+      },
+      {
+        "name": "available_on",
+        "type": "DATE (settlement)"
+      }
+    ]
+  },
+  {
+    "name": "payouts",
+    "desc": "Money wired to the merchant bank.",
+    "columns": [
+      {
+        "name": "payout_id",
+        "type": "BIGINT PK"
+      },
+      {
+        "name": "merchant_id",
+        "type": "BIGINT → merchants"
+      },
+      {
+        "name": "amount",
+        "type": "BIGINT"
+      },
+      {
+        "name": "status",
+        "type": "'paid'|'pending'|'failed'|'in_transit'"
+      },
+      {
+        "name": "arrival_date",
+        "type": "DATE"
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ"
+      }
+    ]
+  },
+  {
+    "name": "experiment_exposures",
+    "desc": "A/B test assignments (e.g. Northwind checkout).",
+    "columns": [
+      {
+        "name": "exposure_id",
+        "type": "BIGINT PK"
+      },
+      {
+        "name": "customer_id",
+        "type": "BIGINT → customers"
+      },
+      {
+        "name": "experiment",
+        "type": "TEXT"
+      },
+      {
+        "name": "variant",
+        "type": "'control'|'treatment'"
+      },
+      {
+        "name": "exposed_at",
+        "type": "TIMESTAMPTZ"
+      }
+    ]
+  }
 ];

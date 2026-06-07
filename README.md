@@ -54,8 +54,8 @@ Because routing is in-app state (not URL paths), no SPA redirect rule is require
 If you later switch to URL-based routes, add a `public/_redirects` file with `/*  /index.html  200`.
 
 ## Migration status
-- **Repo-1 (this):** scaffold, types, store, one sample module (`m1`) + one sample ladder (`cond`, 2 problems), tests, deploy path.
-- **Repo-2:** migrate full schema/cast/resources/rubrics and all 68 problems into typed category files.
+- **Repo-1:** scaffold, types, store, sample module + sample ladder, tests, deploy path. ✅
+- **Repo-2 (done):** full schema (11 tables), cast, resources (+map), rubrics, and **all 68 problems** migrated into typed per-ladder category files; data-integrity tests scaled to the full set. ✅
 - **Repo-3:** migrate all SQL learning modules.
 - **Repo-4:** full Practice Gym parity.
 - **Repo-5:** dashboard blended-readiness polish.

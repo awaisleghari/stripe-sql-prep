@@ -14,5 +14,5 @@ export interface ResourceMapping {
   concept?: string;
   mode?: Mode;
   ladder?: LadderId;
-  label: string;
+  label?: string;
 }

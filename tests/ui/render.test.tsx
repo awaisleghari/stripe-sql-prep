@@ -25,7 +25,7 @@ describe('app renders core flows', () => {
     fireEvent.click(screen.getAllByRole('button', { name: /Practice Gym/ })[0]);
     fireEvent.click(screen.getByRole('button', { name: /Start ladder/ }));
     // focus-title shows the first rung of the conditional ladder
-    expect(screen.getByText('Count succeeded vs total charges per merchant')).toBeTruthy();
+    expect(screen.getByText('Recognize the 0/1 success flag')).toBeTruthy();
     expect(screen.getByText(/What you need to do/)).toBeTruthy();
   });
 });

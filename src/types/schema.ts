@@ -1,16 +1,12 @@
-export interface Column {
+export interface SchemaColumn {
   name: string;
   type: string;
-  note?: string;
 }
 
 export interface Table {
   name: string;
-  grain: string;
-  columns: Column[];
-  joinKeys?: string[];
-  whenToUse?: string;
-  mistake?: string;
+  desc: string;
+  columns: SchemaColumn[];
 }
 
 export type SchemaTables = Table[];
