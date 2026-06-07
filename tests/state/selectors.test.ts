@@ -51,6 +51,7 @@ describe('selectors & navigation', () => {
     m.quiz.forEach((qq, i) => answerQuiz(m.id, i, qq.answer));
     setModuleComplete(m.id, true);
     expect(quizScore(m, getState().modules[m.id])).toMatchObject({ correct: 5, all: true });
-    expect(readiness(getState(), MODULES)).toBe(100);
+    const live = MODULES.filter((mm) => !mm.locked).length;
+    expect(readiness(getState(), MODULES)).toBe(Math.round((1 / live) * 100));
   });
 });

@@ -79,6 +79,16 @@ describe('module data integrity', () => {
       }
     }
   });
+
+  it('has all 9 migrated modules, each with concept, predicts, debugs and exercises', () => {
+    expect(MODULES.length).toBe(9);
+    for (const m of MODULES) {
+      expect(m.concept, `concept for ${m.id}`).toBeTruthy();
+      expect(m.predicts.length, `predicts for ${m.id}`).toBeGreaterThanOrEqual(1);
+      expect(m.debugs.length, `debugs for ${m.id}`).toBeGreaterThanOrEqual(1);
+      expect(m.exercises.length, `exercises for ${m.id}`).toBeGreaterThanOrEqual(3);
+    }
+  });
 });
 
 describe('supporting data', () => {

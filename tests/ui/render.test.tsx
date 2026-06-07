@@ -16,7 +16,7 @@ describe('app renders core flows', () => {
   it('renders the sample module (concept + quiz) on the learning path', () => {
     render(<App />);
     fireEvent.click(screen.getAllByRole('button', { name: /Learning path/ })[0]);
-    expect(screen.getByText('SELECT, WHERE, ORDER BY, LIMIT')).toBeTruthy();
+    expect(screen.getByText('SQL Mental Model from First Principles')).toBeTruthy();
     expect(screen.getByText(/Quiz —/)).toBeTruthy();
   });
 
