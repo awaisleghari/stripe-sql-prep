@@ -40,9 +40,9 @@ export const MODULE_ROADMAP: RoadmapDay[] = [
     day: 'Day 4',
     theme: 'Time & Patterns',
     slots: [
-      { id: 'm7', locked: true, lockedTitle: 'Dates: DATE_TRUNC, rolling, cohorts' },
+      { id: 'm7', locked: false },
       { id: 'm8', locked: false },
-      { id: 'm9', locked: true, lockedTitle: 'Funnel Analysis' },
+      { id: 'm9', locked: false },
     ],
   },
   {

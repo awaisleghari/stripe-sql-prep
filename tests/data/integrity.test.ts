@@ -67,10 +67,43 @@ describe('CTEs & Subqueries (m5 + cte ladder)', () => {
   });
 });
 
+describe('Date/Time Logic + Funnel Analysis (m7/dt, m9/fun)', () => {
+  const pairs = [
+    { mid: 'm7', title: 'Date / Time Logic', lid: 'dt' },
+    { mid: 'm9', title: 'Funnel Analysis', lid: 'fun' },
+  ];
+  for (const { mid, title, lid } of pairs) {
+    it(`${mid} module exists ("${title}") with a 5-question quiz + drills`, () => {
+      const m = getModule(mid);
+      expect(m).toBeTruthy();
+      expect(m!.title).toBe(title);
+      expect(m!.quiz.length).toBe(5);
+      expect(m!.predicts.length).toBeGreaterThanOrEqual(1);
+      expect(m!.debugs.length).toBeGreaterThanOrEqual(1);
+      expect(m!.exercises.length).toBeGreaterThanOrEqual(3);
+    });
+
+    it(`${lid} ladder exists, drills ${mid}, and has 8 wired SQL problems`, () => {
+      const l = LADDERS.find((x) => x.id === lid);
+      expect(l).toBeTruthy();
+      expect(l!.module).toBe(mid);
+      expect(l!.category).toBe('sql');
+      expect(l!.problemIds.length).toBe(8);
+      for (const pid of l!.problemIds) {
+        const p = getProblem(pid);
+        expect(p, `${lid} references ${pid}`).toBeTruthy();
+        expect(p!.ladder).toBe(lid);
+        expect(p!.mode).toBe('SQL');
+        expect(p!.module).toBe(mid);
+      }
+    });
+  }
+});
+
 describe('migrated dataset size', () => {
-  it('has all 76 problems and 10 ladders', () => {
-    expect(PROBLEMS.length).toBe(76);
-    expect(LADDERS.length).toBe(10);
+  it('has all 92 problems and 12 ladders', () => {
+    expect(PROBLEMS.length).toBe(92);
+    expect(LADDERS.length).toBe(12);
   });
   it('every ladder problem-count matches its problemIds', () => {
     const byLadder: Record<string, number> = {};
@@ -137,8 +170,8 @@ describe('module data integrity', () => {
     }
   });
 
-  it('has all 10 migrated modules, each with concept, predicts, debugs and exercises', () => {
-    expect(MODULES.length).toBe(10);
+  it('has all 12 migrated modules, each with concept, predicts, debugs and exercises', () => {
+    expect(MODULES.length).toBe(12);
     for (const m of MODULES) {
       expect(m.concept, `concept for ${m.id}`).toBeTruthy();
       expect(m.predicts.length, `predicts for ${m.id}`).toBeGreaterThanOrEqual(1);

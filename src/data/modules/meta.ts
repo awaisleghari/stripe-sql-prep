@@ -34,9 +34,17 @@ export const MODULE_META: Record<ModuleId, { why: string; outcome: string }> = {
     why: 'Many Stripe questions need first/last events, previous-period comparisons, running totals or rankings — without losing row-level detail.',
     outcome: 'use ROW_NUMBER, RANK, LAG/LEAD and SUM OVER, and pick the correct window frame.',
   },
+  m7: {
+    why: 'Every Stripe metric has a time window and a bucket, and confusing a calendar period with a rolling one — or the event date with the settlement date — silently corrupts the number.',
+    outcome: 'filter rolling vs calendar windows correctly, bucket with DATE_TRUNC, and pick the right timestamp (incl. late-arriving disputes).',
+  },
   m8: {
     why: 'Retries and replayed webhooks create duplicate rows; counting them naively overstates every metric.',
     outcome: 'deduplicate to one row per logical key with a deterministic rule, and count true distinct attempts.',
+  },
+  m9: {
+    why: 'Conversion questions — checkout, onboarding, trial-to-paid — are funnels where the denominator changes per step and counting events instead of entities inflates everything.',
+    outcome: 'build distinct-entity funnels, name the denominator for each conversion rate, and apply a conversion window.',
   },
   m11: {
     why: 'Gross volume is not net revenue. Finance reports what merchants actually keep, which lives in the ledger.',

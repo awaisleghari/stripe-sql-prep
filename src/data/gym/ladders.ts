@@ -75,6 +75,42 @@ export const LADDERS: Ladder[] = [
     ]
   },
   {
+    "id": "dt",
+    "title": "Date / Time Logic",
+    "category": "sql",
+    "module": "m7",
+    "concept": "datetime",
+    "blurb": "Calendar vs rolling windows, DATE_TRUNC buckets, and choosing the right timestamp.",
+    "problemIds": [
+      "dt1",
+      "dt2",
+      "dt3",
+      "dt4",
+      "dt5",
+      "dt6",
+      "dt7",
+      "dt8"
+    ]
+  },
+  {
+    "id": "fun",
+    "title": "Funnel Analysis",
+    "category": "sql",
+    "module": "m9",
+    "concept": "funnel",
+    "blurb": "Count distinct entities per step; name the denominator; apply a conversion window.",
+    "problemIds": [
+      "fu1",
+      "fu2",
+      "fu3",
+      "fu4",
+      "fu5",
+      "fu6",
+      "fu7",
+      "fu8"
+    ]
+  },
+  {
     "id": "rev",
     "title": "Revenue / Ledger",
     "category": "sql",
