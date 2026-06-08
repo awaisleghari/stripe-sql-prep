@@ -1,4 +1,5 @@
-import { MantineProvider } from '@mantine/core';
+import { Suspense, lazy } from 'react';
+import { MantineProvider, Center, Loader } from '@mantine/core';
 import { MODULES } from '@/data/modules';
 import { PROBLEMS } from '@/data/gym';
 import { MOCKS } from '@/data/mock';
@@ -7,16 +8,19 @@ import { useProgress } from '@/state/progressStore';
 import { blendedReadiness } from '@/utils/scoring';
 import { theme } from '@/theme/mantineTheme';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Dashboard } from '@/components/dashboard/Dashboard';
-import { Resources } from '@/components/dashboard/Resources';
-import { ModuleView } from '@/components/learning/ModuleView';
-import { GymView } from '@/components/gym/GymView';
-import { SchemaExplorer } from '@/components/schema/SchemaExplorer';
-import { MockView } from '@/components/pages/MockView';
-import { PanicSheet } from '@/components/pages/PanicSheet';
-import { ReasoningView } from '@/components/pages/ReasoningView';
 
-/** Tiny state-driven router (no react-router dependency for a 5-route SPA). */
+// Route views are code-split: each loads its own chunk on first navigation,
+// keeping the initial bundle to the shell + the active route.
+const Dashboard = lazy(() => import('@/components/dashboard/Dashboard').then((m) => ({ default: m.Dashboard })));
+const Resources = lazy(() => import('@/components/dashboard/Resources').then((m) => ({ default: m.Resources })));
+const ModuleView = lazy(() => import('@/components/learning/ModuleView').then((m) => ({ default: m.ModuleView })));
+const GymView = lazy(() => import('@/components/gym/GymView').then((m) => ({ default: m.GymView })));
+const SchemaExplorer = lazy(() => import('@/components/schema/SchemaExplorer').then((m) => ({ default: m.SchemaExplorer })));
+const MockView = lazy(() => import('@/components/pages/MockView').then((m) => ({ default: m.MockView })));
+const PanicSheet = lazy(() => import('@/components/pages/PanicSheet').then((m) => ({ default: m.PanicSheet })));
+const ReasoningView = lazy(() => import('@/components/pages/ReasoningView').then((m) => ({ default: m.ReasoningView })));
+
+/** Tiny state-driven router (no react-router dependency for a small SPA). */
 export default function App() {
   const state = useProgress();
   const rubricsById = Object.fromEntries(RUBRICS.map((r) => [r.id, r]));
@@ -25,14 +29,16 @@ export default function App() {
   return (
     <MantineProvider theme={theme} forceColorScheme="dark">
       <AppLayout route={state.route} readiness={score}>
-        {state.route === 'dashboard' && <Dashboard />}
-        {state.route === 'learn' && <ModuleView />}
-        {state.route === 'gym' && <GymView />}
-        {state.route === 'schema' && <SchemaExplorer />}
-        {state.route === 'resources' && <Resources />}
-        {state.route === 'reason' && <ReasoningView />}
-        {state.route === 'mock' && <MockView />}
-        {state.route === 'panic' && <PanicSheet />}
+        <Suspense fallback={<Center mih={260}><Loader color="brand" /></Center>}>
+          {state.route === 'dashboard' && <Dashboard />}
+          {state.route === 'learn' && <ModuleView />}
+          {state.route === 'gym' && <GymView />}
+          {state.route === 'schema' && <SchemaExplorer />}
+          {state.route === 'resources' && <Resources />}
+          {state.route === 'reason' && <ReasoningView />}
+          {state.route === 'mock' && <MockView />}
+          {state.route === 'panic' && <PanicSheet />}
+        </Suspense>
       </AppLayout>
     </MantineProvider>
   );

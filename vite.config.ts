@@ -8,7 +8,20 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
-  build: { outDir: 'dist', sourcemap: true },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        // Split heavy vendors so no single chunk trips the 500 kB warning and so
+        // they cache independently of app code.
+        manualChunks: {
+          mantine: ['@mantine/core', '@mantine/hooks'],
+          icons: ['@tabler/icons-react'],
+        },
+      },
+    },
+  },
   test: {
     // Vitest unit tests run in Node. The store is written to be node-safe (no jsdom needed).
     // UI render tests opt into jsdom per-file via `// @vitest-environment jsdom`.
