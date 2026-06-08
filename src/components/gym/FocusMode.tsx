@@ -1,4 +1,5 @@
 import { Group, Title } from '@mantine/core';
+import type { Difficulty } from '@/types';
 import { LADDERS, getProblem } from '@/data/gym';
 import { useProgress, focusProblem, setGymTab } from '@/state/progressStore';
 import { ladderProgress } from '@/state/selectors';
@@ -9,6 +10,14 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { ProblemDetail } from './ProblemDetail';
+
+const DIFF_ACCENT: Record<Difficulty, string> = {
+  recognition: '#7c8aa0',
+  easy: '#6f9bff',
+  medium: '#e6c14b',
+  hard: '#f0976b',
+  'final-boss': '#f0726b',
+};
 
 export function FocusMode() {
   const state = useProgress();
@@ -36,7 +45,7 @@ export function FocusMode() {
 
   return (
     <div>
-      <div className="focus-head">
+      <div className="focus-head" style={{ ['--accent' as string]: DIFF_ACCENT[p.difficulty] } as React.CSSProperties}>
         <Group gap={6} mb="xs">
           <Tag color="geekblue">{ladder.title}</Tag>
           <Tag color="grey">Problem {idx + 1} of {ladder.problemIds.length}</Tag>

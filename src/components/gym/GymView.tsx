@@ -10,6 +10,8 @@ import { FocusMode } from './FocusMode';
 import { BrowseAll } from './BrowseAll';
 import { ReviewQueue } from './ReviewQueue';
 
+const accent = (hex: string) => ({ ['--accent' as string]: hex } as React.CSSProperties);
+
 export function GymView() {
   const state = useProgress();
   const counts = gymCounts(state, PROBLEMS);
@@ -42,10 +44,10 @@ export function GymView() {
           </Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel value="path" pt="md"><GuidedPath /></Tabs.Panel>
-        <Tabs.Panel value="focus" pt="md"><FocusMode /></Tabs.Panel>
-        <Tabs.Panel value="browse" pt="md"><BrowseAll /></Tabs.Panel>
-        <Tabs.Panel value="review" pt="md"><ReviewQueue /></Tabs.Panel>
+        <Tabs.Panel value="path" pt="md"><div className="tab-accent" style={accent('#6e8efb')}><GuidedPath /></div></Tabs.Panel>
+        <Tabs.Panel value="focus" pt="md"><div className="tab-accent" style={accent('#b692f6')}><FocusMode /></div></Tabs.Panel>
+        <Tabs.Panel value="browse" pt="md"><div className="tab-accent" style={accent('#4dc9d6')}><BrowseAll /></div></Tabs.Panel>
+        <Tabs.Panel value="review" pt="md"><div className="tab-accent" style={accent('#f0976b')}><ReviewQueue /></div></Tabs.Panel>
       </Tabs>
     </div>
   );
