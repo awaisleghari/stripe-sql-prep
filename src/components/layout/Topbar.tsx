@@ -1,36 +1,40 @@
-import { Layout, Progress, Typography } from 'antd';
+import { Layout, Progress } from 'antd';
 
 const { Header } = Layout;
-const { Text } = Typography;
 
-export function Topbar({ title, readiness }: { title: string; readiness: number }) {
+export function Topbar({ crumb, readiness }: { crumb: string; readiness: number }) {
   return (
     <Header
       style={{
+        height: 62,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        borderBottom: '1px solid var(--border)',
+        padding: '0 30px',
+        gap: 16,
         position: 'sticky',
         top: 0,
-        zIndex: 5,
-        background: 'var(--bg-layout)',
+        zIndex: 10,
+        background: 'rgba(13,17,26,0.72)',
+        backdropFilter: 'blur(14px)',
+        WebkitBackdropFilter: 'blur(14px)',
+        borderBottom: '1px solid var(--split)',
       }}
     >
-      <Text strong style={{ fontSize: 15 }}>
-        {title}
-      </Text>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Text type="secondary" style={{ fontSize: 12.5 }}>
-          Interview readiness
-        </Text>
+      <span className="crumb">
+        <span>Stripe Interview Prep</span>
+        <span className="crumb-sep">/</span>
+        <b>{crumb}</b>
+      </span>
+      <span style={{ flex: 1 }} />
+      <div className="readiness-chip">
         <Progress
           type="circle"
           percent={readiness}
-          size={40}
+          size={34}
           strokeColor="#6e8efb"
           trailColor="rgba(255,255,255,0.08)"
         />
+        <span className="rc-label">Interview readiness</span>
       </div>
     </Header>
   );

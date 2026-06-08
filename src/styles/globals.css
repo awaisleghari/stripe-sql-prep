@@ -14,8 +14,12 @@ a:hover { text-decoration: underline; }
 h1, h2, h3 { color: var(--t-1); line-height: 1.25; }
 code.inline { background: var(--fill-2); padding: 1px 5px; border-radius: 4px; font-family: var(--mono); font-size: .9em; }
 pre { margin: 0; }
-.prose { color: var(--t-2); }
-.prose li { margin: 3px 0; }
+.prose { color: var(--t-1); }
+.prose p { margin: 8px 0; color: var(--t-1); }
+.prose li { margin: 5px 0; color: var(--t-1); }
+.prose strong { font-weight: 650; color: #f1f4fa; }
+.prose em { color: var(--t-2); }
+.prose code.inline { color: #cdd9ff; }
 .mono { font-family: var(--mono); }
 .page-sub { color: var(--t-2); font-size: 13px; }
 .section-label { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--t-3); font-weight: 700; }

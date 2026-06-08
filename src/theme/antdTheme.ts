@@ -51,9 +51,11 @@ export const antdTheme: ThemeConfig = {
       itemHoverBg: 'rgba(255,255,255,0.04)',
       itemSelectedBg: 'rgba(110,142,251,0.13)',
       itemSelectedColor: '#bcccff',
-      groupTitleColor: '#4c5564',
+      groupTitleColor: '#5a6680',
+      groupTitleFontSize: 10.5,
       itemBorderRadius: 8,
       itemMarginInline: 8,
+      itemHeight: 38,
     },
     Tabs: {
       itemColor: '#a7b0c0',
@@ -63,11 +65,12 @@ export const antdTheme: ThemeConfig = {
       titleFontSize: 14,
     },
     Card: {
-      colorBgContainer: '#141925',
+      colorBgContainer: '#161c28',
     },
     Collapse: {
-      headerBg: '#161b25',
-      contentBg: '#141925',
+      headerBg: '#1b2230',
+      contentBg: '#141a26',
+      borderRadiusLG: 8,
     },
     Segmented: {
       itemSelectedBg: 'rgba(110,142,251,0.18)',

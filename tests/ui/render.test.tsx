@@ -14,11 +14,13 @@ describe('app renders core flows', () => {
     expect(screen.getByText('Skill coverage by category')).toBeTruthy();
   });
 
-  it('renders the sample module (concept + quiz) on the learning path', () => {
+  it('renders the sample module (concept + quiz) from the learning-path rail', () => {
     render(<App />);
-    fireEvent.click(screen.getByRole('menuitem', { name: /Learning path/ }));
-    // The module title sits above the tabs and is always visible.
-    expect(screen.getByText('SQL Mental Model from First Principles')).toBeTruthy();
+    // Modules live in the sidebar now; open M0 directly.
+    fireEvent.click(screen.getByRole('menuitem', { name: /SQL Mental Model/ }));
+    // The hero heading carries the module title (also appears in the rail + breadcrumb,
+    // so scope the assertion to the heading role).
+    expect(screen.getByRole('heading', { name: 'SQL Mental Model from First Principles' })).toBeTruthy();
     // The quiz now lives in its own tab — switch to it, then assert.
     fireEvent.click(screen.getByRole('tab', { name: 'Quiz' }));
     expect(screen.getByText(/Quiz —/)).toBeTruthy();

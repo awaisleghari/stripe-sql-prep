@@ -23,9 +23,37 @@
 .brand-name { font-weight: 650; font-size: 14px; color: var(--t-1); letter-spacing: .1px; }
 .brand-sub { font-size: 11px; color: var(--t-3); margin-top: 2px; }
 
+/* Sidebar learning-path module items */
+.navmod { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.navmod-id { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--t-3); background: var(--fill-2); border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; line-height: 16px; flex: 0 0 auto; }
+.navmod-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ant-menu-item-selected .navmod-id { color: #bcccff; border-color: var(--c-primary-border); background: var(--c-primary-bg); }
+
+/* Topbar breadcrumb + readiness chip */
+.crumb { font-size: 13px; color: var(--t-3); display: inline-flex; align-items: center; min-width: 0; }
+.crumb > span:first-child { white-space: nowrap; }
+.crumb-sep { margin: 0 8px; color: var(--t-4); }
+.crumb b { color: var(--t-1); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.readiness-chip { display: inline-flex; align-items: center; gap: 10px; padding: 5px 16px 5px 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 30px; box-shadow: var(--shadow-card); }
+.rc-label { font-size: 11.5px; color: var(--t-2); font-weight: 550; white-space: nowrap; }
+
+/* Learning-module hero header */
+.mod-hero { background: linear-gradient(180deg, rgba(110, 142, 251, .06), transparent 62%), var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: 22px 24px; margin-bottom: 14px; }
+.hero-title { font-size: 26px; font-weight: 680; letter-spacing: -.3px; margin: 0; line-height: 1.2; background: linear-gradient(90deg, #eef1f8, #c3ccdd); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-why { color: var(--t-2); font-size: 13.5px; margin: 9px 0 0; max-width: 780px; line-height: 1.55; }
+.ph-howto { margin-top: 16px; background: var(--fill-2); border: 1px solid var(--split); border-left: 3px solid var(--c-geekblue); border-radius: 8px; padding: 11px 14px; font-size: 12.8px; color: var(--t-2); line-height: 1.55; }
+.ph-howto-label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .7px; font-weight: 800; color: var(--c-geekblue); margin-bottom: 4px; }
+.outcome-panel { background: var(--fill-2); border: 1px solid var(--split); border-left: 3px solid var(--c-success); border-radius: 8px; padding: 12px 15px; margin: 0 0 16px; font-size: 13.2px; color: var(--t-1); line-height: 1.55; }
+.op-label { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; font-weight: 800; color: var(--c-success); margin-bottom: 5px; }
+
+/* Ant surfaces: a little depth + brighter card titles */
+.ant-card { box-shadow: 0 1px 0 0 rgba(255, 255, 255, .02) inset, 0 8px 24px -18px rgba(0, 0, 0, .6); }
+.ant-card-head-title { color: var(--t-1); font-weight: 600; }
+.ant-tabs-tab { font-weight: 550; }
+
 .btn { font-family: var(--font); font-size: 13px; font-weight: 600; color: var(--t-1); background: var(--fill); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 14px; cursor: pointer; transition: .15s; }
 .btn:hover { border-color: var(--c-primary); }
-.btn.primary { background: var(--c-primary); border-color: var(--c-primary); color: #0b1220; }
+.btn.primary { background: linear-gradient(135deg, #6e8efb, #5a78f0); border-color: transparent; color: #0b0e16; box-shadow: 0 6px 18px -8px rgba(110, 142, 251, .8); }
 .btn.primary:hover { filter: brightness(1.08); }
 .btn.sm { font-size: 12px; padding: 6px 11px; }
 

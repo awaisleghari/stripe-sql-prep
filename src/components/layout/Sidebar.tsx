@@ -1,51 +1,92 @@
 import { Layout, Menu } from 'antd';
 import type { MenuProps } from 'antd';
-import type { Route } from '@/types';
-import { setRoute } from '@/state/progressStore';
+import {
+  AppstoreOutlined,
+  ThunderboltOutlined,
+  BranchesOutlined,
+  AimOutlined,
+  DatabaseOutlined,
+  AlertOutlined,
+  LinkOutlined,
+} from '@ant-design/icons';
+import type { Route, Module } from '@/types';
+import { MODULES } from '@/data/modules';
+import { useProgress, setRoute, openModule } from '@/state/progressStore';
 
 const { Sider } = Layout;
 
-type NavItem = { route: Route; label: string; icon: string };
+/** Theme name shown beside each day in the Learning Path rail. */
+const DAY_THEME: Record<string, string> = {
+  'Day 1': 'Foundations',
+  'Day 2': 'Logic & Joins',
+  'Day 3': 'Composition & Windows',
+  'Day 4': 'Time & Patterns',
+  'Day 5': 'Stripe Metrics',
+};
 
-/** Grouped navigation — fewer top-level items per group keeps the rail uncluttered. */
-const GROUPS: { title: string; items: NavItem[] }[] = [
-  { title: 'Overview', items: [{ route: 'dashboard', label: 'Dashboard', icon: '🏠' }] },
+function moduleLabel(id: string, title: string) {
+  return (
+    <span className="navmod">
+      <span className="navmod-id">{id.toUpperCase()}</span>
+      <span className="navmod-title">{title}</span>
+    </span>
+  );
+}
+
+/** Group modules under their day, preserving MODULES order. */
+function dayGroups(): MenuProps['items'] {
+  const order: string[] = [];
+  const byDay: Record<string, Module[]> = {};
+  for (const m of MODULES) {
+    if (!byDay[m.day]) {
+      byDay[m.day] = [];
+      order.push(m.day);
+    }
+    byDay[m.day].push(m);
+  }
+  return order.map((day) => ({
+    key: `grp-${day}`,
+    type: 'group',
+    label: DAY_THEME[day] ? `${day} · ${DAY_THEME[day]}` : day,
+    children: byDay[day].map((m) => ({ key: m.id, label: moduleLabel(m.id, m.title) })),
+  }));
+}
+
+const MODULE_IDS = new Set<string>(MODULES.map((m) => m.id));
+
+const ITEMS: MenuProps['items'] = [
   {
-    title: 'Learn',
-    items: [
-      { route: 'learn', label: 'Learning path', icon: '📚' },
-      { route: 'schema', label: 'Schema explorer', icon: '🗄' },
+    key: 'g-overview',
+    type: 'group',
+    label: 'Overview',
+    children: [{ key: 'dashboard', icon: <AppstoreOutlined />, label: 'Dashboard' }],
+  },
+  ...(dayGroups() ?? []),
+  {
+    key: 'g-practice',
+    type: 'group',
+    label: 'Practice',
+    children: [
+      { key: 'gym', icon: <ThunderboltOutlined />, label: 'Practice Gym' },
+      { key: 'reason', icon: <BranchesOutlined />, label: 'Data reasoning → SQL' },
+      { key: 'mock', icon: <AimOutlined />, label: 'Mock interviews' },
     ],
   },
   {
-    title: 'Practice',
-    items: [
-      { route: 'gym', label: 'Practice Gym', icon: '🏋️' },
-      { route: 'reason', label: 'Data reasoning → SQL', icon: '🔁' },
-      { route: 'mock', label: 'Mock interviews', icon: '🎯' },
-    ],
-  },
-  {
-    title: 'Reference',
-    items: [
-      { route: 'panic', label: 'Panic sheet', icon: '🚑' },
-      { route: 'resources', label: 'Resources', icon: '🔗' },
+    key: 'g-reference',
+    type: 'group',
+    label: 'Reference',
+    children: [
+      { key: 'schema', icon: <DatabaseOutlined />, label: 'Schema explorer' },
+      { key: 'panic', icon: <AlertOutlined />, label: 'Panic sheet' },
+      { key: 'resources', icon: <LinkOutlined />, label: 'Resources' },
     ],
   },
 ];
 
-const MENU_ITEMS: MenuProps['items'] = GROUPS.map((group) => ({
-  key: group.title,
-  type: 'group',
-  label: group.title,
-  children: group.items.map((it) => ({
-    key: it.route,
-    label: it.label,
-    icon: <span style={{ fontSize: 14, lineHeight: 1 }}>{it.icon}</span>,
-  })),
-}));
-
-export function Sidebar({ active }: { active: Route }) {
+export function Sidebar() {
+  const state = useProgress();
+  const selected = state.route === 'learn' ? state.activeModuleId ?? MODULES[0].id : state.route;
   return (
     <Sider
       width={252}
@@ -66,9 +107,9 @@ export function Sidebar({ active }: { active: Route }) {
       </div>
       <Menu
         mode="inline"
-        selectedKeys={[active]}
-        items={MENU_ITEMS}
-        onClick={({ key }) => setRoute(key as Route)}
+        selectedKeys={[selected]}
+        items={ITEMS}
+        onClick={({ key }) => (MODULE_IDS.has(key) ? openModule(key) : setRoute(key as Route))}
         style={{ borderInlineEnd: 0, background: 'transparent' }}
       />
     </Sider>

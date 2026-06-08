@@ -1,15 +1,21 @@
 import { useState } from 'react';
-import { Tabs, Card, Tag, Alert, Collapse, Radio, Button, Rate, Segmented, Descriptions, Typography, Space } from 'antd';
+import { Tabs, Card, Tag, Alert, Collapse, Radio, Button, Rate, Descriptions, Space } from 'antd';
 import type { TabsProps, CollapseProps, DescriptionsProps } from 'antd';
 import type { Predict, Debug, Module, Badge, TagColor, ReasoningFramework } from '@/types';
 import { MODULES, getModule } from '@/data/modules';
-import { useProgress, openModule, answerQuiz, setConfidence, setModuleComplete, setRoute } from '@/state/progressStore';
+import { MODULE_META } from '@/data/modules/meta';
+import { useProgress, answerQuiz, setConfidence, setModuleComplete, setRoute } from '@/state/progressStore';
 import { quizScore, moduleReady } from '@/utils/scoring';
 import { PRIORITY_META } from '@/utils/formatters';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 
-const { Title } = Typography;
 const html = (s: string) => ({ __html: s });
+
+const HOWTO =
+  'Work the tabs left to right — Concept (mental model and SQL pattern), Predict an output, Debug a broken query, climb the Exercise ladder, study Pitfalls, rehearse the Interview script, then take the 5-question Quiz and rate your Confidence. Scoring 4/5 or better on the quiz (plus one harder exercise) marks the module interview-ready and lifts your readiness score.';
+
+const CONF_LABEL = ['Not rated', 'New', 'Shaky', 'Familiar', 'Confident', 'Strong'];
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** Full-width vertical stack with a consistent gap (flex column → children stretch). */
 function Stack({ gap = 16, children }: { gap?: number; children: React.ReactNode }) {
@@ -36,7 +42,10 @@ export function ModuleView() {
   const active = state.activeModuleId ?? MODULES[0].id;
   const m = getModule(active);
   if (!m) return <div className="empty-state">Module not found.</div>;
-  const ready = moduleReady(m, state.modules[m.id]);
+  const ms = state.modules[m.id];
+  const ready = moduleReady(m, ms);
+  const meta = MODULE_META[m.id];
+  const conf = ms?.confidence ?? 0;
 
   const tabs: TabsProps['items'] = [
     { key: 'concept', label: 'Concept', children: <ConceptTab m={m} /> },
@@ -51,20 +60,26 @@ export function ModuleView() {
 
   return (
     <div>
-      <Segmented
-        value={m.id}
-        onChange={(val) => openModule(String(val))}
-        options={MODULES.map((mm) => ({ label: mm.id.toUpperCase(), value: mm.id }))}
-        style={{ marginBottom: 16, maxWidth: '100%', overflowX: 'auto' }}
-      />
-      <Space size={6} wrap style={{ marginBottom: 6 }}>
-        <PaletteTag color="blue">{m.day}</PaletteTag>
-        <PaletteTag color={BADGE_COLOR[m.badge]}>{m.badge}</PaletteTag>
-        {ready && <Tag color="success">✓ interview-ready</Tag>}
-      </Space>
-      <Title level={3} style={{ marginTop: 4, marginBottom: 14 }}>
-        {m.title}
-      </Title>
+      <div className="mod-hero">
+        <h1 className="hero-title">{m.title}</h1>
+        {meta?.why && <p className="hero-why">{meta.why}</p>}
+        <Space size={6} wrap style={{ marginTop: 12 }}>
+          <PaletteTag color={BADGE_COLOR[m.badge]}>{cap(m.badge)}</PaletteTag>
+          <PaletteTag color="geekblue">{m.day}</PaletteTag>
+          <Tag>{CONF_LABEL[conf]}</Tag>
+          {ready && <Tag color="success">✓ Interview-ready</Tag>}
+        </Space>
+        <div className="ph-howto">
+          <span className="ph-howto-label">How to use this page</span>
+          {HOWTO}
+        </div>
+      </div>
+      {meta?.outcome && (
+        <div className="outcome-panel">
+          <span className="op-label">What you'll be able to do</span>
+          By the end of this module you can {meta.outcome}
+        </div>
+      )}
       <Tabs defaultActiveKey="concept" items={tabs} />
     </div>
   );
