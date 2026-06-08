@@ -45,7 +45,7 @@ export const theme = createTheme({
 
   fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   fontFamilyMonospace: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace',
-  fontSizes: { xs: '12px', sm: '13.5px', md: '15px', lg: '17px', xl: '20px' },
+  fontSizes: { xs: '12px', sm: '14px', md: '15.5px', lg: '17.5px', xl: '21px' },
   lineHeights: { xs: '1.45', sm: '1.5', md: '1.6', lg: '1.65', xl: '1.65' },
 
   headings: {

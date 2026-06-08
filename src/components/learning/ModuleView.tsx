@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Tabs, Paper, Badge, Alert, Accordion, Radio, Rating, Group, Stack } from '@mantine/core';
+import { Tabs, Paper, Badge, Alert, Accordion, Radio, Rating, Group, Stack, Progress } from '@mantine/core';
 import {
   IconBulb,
   IconEye,
@@ -17,7 +17,7 @@ import {
 import type { Predict, Debug, Module, Badge as ModuleBadge, TagColor, ReasoningFramework } from '@/types';
 import { MODULES, getModule } from '@/data/modules';
 import { MODULE_META } from '@/data/modules/meta';
-import { useProgress, answerQuiz, setConfidence, setModuleComplete, setRoute } from '@/state/progressStore';
+import { useProgress, answerQuiz, setConfidence, setModuleComplete, setExerciseDone, setRoute } from '@/state/progressStore';
 import { quizScore, moduleReady } from '@/utils/scoring';
 import { PRIORITY_META } from '@/utils/formatters';
 import { CodeBlock } from '@/components/ui/CodeBlock';
@@ -72,6 +72,8 @@ export function ModuleView() {
   const ready = moduleReady(m, ms);
   const meta = MODULE_META[m.id];
   const conf = ms?.confidence ?? 0;
+  const att = ms?.att ?? {};
+  const exDone = m.exercises.filter((ex) => att[ex.id]).length;
 
   return (
     <div>
@@ -81,6 +83,7 @@ export function ModuleView() {
         <Group gap={6} mt="md">
           <PTag color={BADGE_COLOR[m.badge]}>{cap(m.badge)}</PTag>
           <PTag color="indigo">{m.day}</PTag>
+          <PTag color="grape">{exDone}/{m.exercises.length} drills</PTag>
           <PTag color="gray">{CONF_LABEL[conf]}</PTag>
           {ready && <PTag color="teal">✓ Interview-ready</PTag>}
         </Group>
@@ -205,54 +208,76 @@ function DebugTab({ m }: { m: Module }) {
 }
 
 function ExercisesTab({ m }: { m: Module }) {
+  const state = useProgress();
+  const att = state.modules[m.id]?.att ?? {};
   const sorted = [...m.exercises].sort((a, b) => a.lvl - b.lvl);
+  const doneCount = sorted.filter((ex) => att[ex.id]).length;
+  const pct = sorted.length ? Math.round((doneCount / sorted.length) * 100) : 0;
+
   return (
     <Stack gap="sm">
-      <p className="page-sub" style={{ marginTop: 0 }}>Each level adds one new kind of difficulty. Attempt at least three to unlock completion.</p>
-      <Accordion variant="separated" radius="md">
-        {sorted.map((ex) => (
-          <Accordion.Item key={ex.id} value={ex.id}>
-            <Accordion.Control
-              icon={
-                <Badge variant="light" color="gray" radius="sm" size="sm" styles={{ label: { textTransform: 'none' } }}>
-                  L{ex.lvl}
-                </Badge>
-              }
-            >
-              {ex.title}
-            </Accordion.Control>
-            <Accordion.Panel>
-              <Group gap={6} mb="sm">
-                <PTag color={TAG_COLOR[PRIORITY_META[ex.priority].color]}>{PRIORITY_META[ex.priority].label}</PTag>
-              </Group>
-              <div className="prose" dangerouslySetInnerHTML={html(ex.prompt)} />
-              {ex.hints && ex.hints.length > 0 && (
-                <Accordion variant="separated" radius="md" mt="sm">
-                  <Accordion.Item value="hints">
-                    <Accordion.Control icon={<IconBulb size={16} />}>Hints</Accordion.Control>
-                    <Accordion.Panel>
-                      <ul className="prose">
-                        {ex.hints.map((h, i) => (
-                          <li key={i} dangerouslySetInnerHTML={html(h)} />
-                        ))}
-                      </ul>
-                    </Accordion.Panel>
-                  </Accordion.Item>
-                </Accordion>
-              )}
-              {ex.solution && (
-                <Accordion variant="separated" radius="md" mt="sm">
-                  <Accordion.Item value="sol">
-                    <Accordion.Control icon={<IconCircleCheck size={16} />}>Solution — reveal after you try</Accordion.Control>
-                    <Accordion.Panel>
-                      <CodeBlock>{ex.solution}</CodeBlock>
-                    </Accordion.Panel>
-                  </Accordion.Item>
-                </Accordion>
-              )}
-            </Accordion.Panel>
-          </Accordion.Item>
-        ))}
+      <Group justify="space-between" align="center">
+        <p className="page-sub" style={{ margin: 0 }}>Each level adds one kind of difficulty. Mark each drill done as you clear it.</p>
+        <PTag color={doneCount ? 'teal' : 'gray'}>{doneCount} / {sorted.length} done</PTag>
+      </Group>
+      <Progress value={pct} color="teal" size="sm" radius="xl" />
+      <Accordion variant="separated" radius="md" mt={4}>
+        {sorted.map((ex) => {
+          const done = !!att[ex.id];
+          return (
+            <Accordion.Item key={ex.id} value={ex.id}>
+              <Accordion.Control
+                icon={
+                  <Badge variant={done ? 'filled' : 'light'} color={done ? 'teal' : 'gray'} radius="sm" size="sm" styles={{ label: { textTransform: 'none' } }}>
+                    {done ? '✓' : ''}L{ex.lvl}
+                  </Badge>
+                }
+              >
+                {ex.title}
+              </Accordion.Control>
+              <Accordion.Panel>
+                <Group gap={6} mb="sm">
+                  <PTag color={TAG_COLOR[PRIORITY_META[ex.priority].color]}>{PRIORITY_META[ex.priority].label}</PTag>
+                </Group>
+                <div className="prose" dangerouslySetInnerHTML={html(ex.prompt)} />
+                {ex.hints && ex.hints.length > 0 && (
+                  <Accordion variant="separated" radius="md" mt="sm">
+                    <Accordion.Item value="hints">
+                      <Accordion.Control icon={<IconBulb size={16} color="var(--mantine-color-yellow-4)" />}>Hints</Accordion.Control>
+                      <Accordion.Panel>
+                        <ul className="prose">
+                          {ex.hints.map((h, i) => (
+                            <li key={i} dangerouslySetInnerHTML={html(h)} />
+                          ))}
+                        </ul>
+                      </Accordion.Panel>
+                    </Accordion.Item>
+                  </Accordion>
+                )}
+                {ex.solution && (
+                  <Accordion variant="separated" radius="md" mt="sm">
+                    <Accordion.Item value="sol">
+                      <Accordion.Control icon={<IconCircleCheck size={16} color="var(--mantine-color-teal-4)" />}>Solution — reveal after you try</Accordion.Control>
+                      <Accordion.Panel>
+                        <CodeBlock>{ex.solution}</CodeBlock>
+                      </Accordion.Panel>
+                    </Accordion.Item>
+                  </Accordion>
+                )}
+                <Group mt="md">
+                  <Button
+                    small
+                    variant={done ? 'primary' : 'default'}
+                    leftSection={done ? <IconCircleCheck size={15} /> : undefined}
+                    onClick={() => setExerciseDone(m.id, ex.id, !done)}
+                  >
+                    {done ? 'Done' : 'Mark this drill done'}
+                  </Button>
+                </Group>
+              </Accordion.Panel>
+            </Accordion.Item>
+          );
+        })}
       </Accordion>
     </Stack>
   );
@@ -301,7 +326,7 @@ function InterviewTab({ m }: { m: Module }) {
       {m.followup && (
         <Accordion variant="separated" radius="md">
           <Accordion.Item value="followup">
-            <Accordion.Control icon={<IconMicrophone size={16} />}>Follow-up: {m.followup.prompt}</Accordion.Control>
+            <Accordion.Control icon={<IconMicrophone size={16} color="var(--mantine-color-cyan-4)" />}>Follow-up: {m.followup.prompt}</Accordion.Control>
             <Accordion.Panel>
               <div className="prose" dangerouslySetInnerHTML={html(m.followup.answer)} />
             </Accordion.Panel>
@@ -369,8 +394,19 @@ function ConfidenceTab({ m }: { m: Module }) {
   const state = useProgress();
   const ms = state.modules[m.id];
   const ready = moduleReady(m, ms);
+  const score = quizScore(m, ms);
+  const att = ms?.att ?? {};
+  const exDone = m.exercises.filter((ex) => att[ex.id]).length;
   return (
     <Stack gap="lg">
+      <Paper withBorder p="md" radius="md">
+        <SectionLabel mb={10}>Module progress</SectionLabel>
+        <Group gap={6}>
+          <PTag color={exDone ? 'grape' : 'gray'}>{exDone}/{m.exercises.length} drills done</PTag>
+          <PTag color={score.correct >= 4 ? 'teal' : 'gray'}>quiz {score.correct}/{score.total}</PTag>
+          <PTag color={ms?.complete ? 'teal' : 'gray'}>{ms?.complete ? 'marked complete' : 'not complete'}</PTag>
+        </Group>
+      </Paper>
       <Paper withBorder p="md" radius="md">
         <SectionLabel mb={10}>How confident are you on this topic right now?</SectionLabel>
         <Rating value={ms?.confidence ?? 0} onChange={(n) => setConfidence(m.id, n)} count={5} size="lg" color="yellow" />
@@ -383,7 +419,7 @@ function ConfidenceTab({ m }: { m: Module }) {
       </Group>
       {!ready && (
         <Alert variant="light" color="yellow" radius="md" icon={<IconAlertTriangle />} title="Interview-ready gate">
-          Answer all 5 quiz questions (≥4 correct) and mark the module complete to make it interview-ready and lift your readiness score.
+          Clear a few drills, answer all 5 quiz questions (≥4 correct), and mark the module complete to make it interview-ready and lift your readiness score.
         </Alert>
       )}
     </Stack>
@@ -427,13 +463,13 @@ function DebugBlock({ debug }: { debug: Debug }) {
       <CodeBlock>{debug.broken}</CodeBlock>
       <Accordion variant="separated" radius="md" mt="sm">
         <Accordion.Item value="hint">
-          <Accordion.Control icon={<IconBulb size={16} />}>Hint</Accordion.Control>
+          <Accordion.Control icon={<IconBulb size={16} color="var(--mantine-color-yellow-4)" />}>Hint</Accordion.Control>
           <Accordion.Panel>
             <span className="prose" dangerouslySetInnerHTML={html(debug.hint)} />
           </Accordion.Panel>
         </Accordion.Item>
         <Accordion.Item value="fix">
-          <Accordion.Control icon={<IconCircleCheck size={16} />}>Fixed query & why</Accordion.Control>
+          <Accordion.Control icon={<IconCircleCheck size={16} color="var(--mantine-color-teal-4)" />}>Fixed query & why</Accordion.Control>
           <Accordion.Panel>
             <CodeBlock>{debug.fixed}</CodeBlock>
             <p className="prose" style={{ marginTop: 8 }} dangerouslySetInnerHTML={html(debug.why)} />

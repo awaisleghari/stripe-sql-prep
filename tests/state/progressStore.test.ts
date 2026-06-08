@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  getState, __resetForTests, setProblemStatus, focusProblem, setGymTab, answerQuiz, setModuleComplete, setRoute, setMockScore,
+  getState, __resetForTests, setProblemStatus, focusProblem, setGymTab, answerQuiz, setModuleComplete, setExerciseDone, setRoute, setMockScore,
 } from '@/state/progressStore';
 
 beforeEach(() => __resetForTests());
@@ -34,6 +34,13 @@ describe('progress store', () => {
     answerQuiz('m1', 0, 1);
     setModuleComplete('m1', true);
     expect(getState().modules.m1).toMatchObject({ quiz: { 0: 1 }, complete: true });
+  });
+
+  it('tracks per-exercise done flags under the module att map and can toggle off', () => {
+    setExerciseDone('m1', 'm1e1', true);
+    expect(getState().modules.m1.att).toMatchObject({ m1e1: true });
+    setExerciseDone('m1', 'm1e1', false);
+    expect(getState().modules.m1.att?.m1e1).toBe(false);
   });
 
   it('setRoute and setGymTab mutate only their slice', () => {

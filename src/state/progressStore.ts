@@ -90,6 +90,11 @@ export function answerQuiz(id: ModuleId, qIndex: number, option: number): void {
 export function setConfidence(id: ModuleId, value: number): void {
   commit({ ...state, modules: { ...state.modules, [id]: { ...state.modules[id], confidence: value } } });
 }
+/** Mark a learning-module exercise/drill done (stored under the module's `att` map). */
+export function setExerciseDone(id: ModuleId, exId: string, done: boolean): void {
+  const m = state.modules[id] ?? {};
+  commit({ ...state, modules: { ...state.modules, [id]: { ...m, att: { ...(m.att ?? {}), [exId]: done } } } });
+}
 export function setProblemStatus(id: ProblemId, status: 'attempted' | 'completed' | 'review'): void {
   const prev = state.problems[id] ?? {};
   const next =

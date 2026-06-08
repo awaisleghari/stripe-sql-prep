@@ -20,6 +20,20 @@ import { Callout } from '@/components/ui/Callout';
 
 const RUBRIC_BY_ID: Record<string, Rubric> = Object.fromEntries(RUBRICS.map((r) => [r.id, r]));
 
+/** A distinct, balanced accent per training category. */
+const MODE_COLOR: Record<Mode, string> = {
+  SQL: 'indigo',
+  Python: 'yellow',
+  DataLogic: 'grape',
+  Product: 'cyan',
+  Experiment: 'teal',
+  Causal: 'pink',
+  Statistics: 'orange',
+  Object: 'lime',
+  Pseudocode: 'gray',
+  Mixed: 'blue',
+};
+
 function Pillar({ label, pct, color }: { label: string; pct: number; color: string }) {
   return (
     <Group gap="sm" wrap="nowrap" align="center">
@@ -128,11 +142,14 @@ export function Dashboard() {
             const done = c.completed === c.total;
             return (
               <Paper key={c.mode} withBorder p="sm" radius="md">
-                <Group justify="space-between" align="baseline">
-                  <Text fw={650} size="sm">{MODE_LABEL[c.mode]}</Text>
+                <Group justify="space-between" align="center">
+                  <Group gap={8} wrap="nowrap">
+                    <span style={{ width: 9, height: 9, borderRadius: 99, flex: '0 0 auto', background: `var(--mantine-color-${MODE_COLOR[c.mode]}-5)` }} />
+                    <Text fw={650} size="sm">{MODE_LABEL[c.mode]}</Text>
+                  </Group>
                   <Text size="xs" fw={600} c={done ? 'teal' : 'dimmed'}>{c.completed}/{c.total}</Text>
                 </Group>
-                <Progress value={c.pct} color={done ? 'teal' : 'brand'} size="sm" radius="xl" my="sm" />
+                <Progress value={c.pct} color={done ? 'teal' : MODE_COLOR[c.mode]} size="sm" radius="xl" my="sm" />
                 <Button small onClick={() => practiceCategory(c.mode)}>
                   {done ? 'Review →' : c.completed ? 'Continue →' : 'Start →'}
                 </Button>
