@@ -1,3 +1,4 @@
+import { Group, Table } from '@mantine/core';
 import type { Problem } from '@/types';
 import { useProgress, setProblemStatus } from '@/state/progressStore';
 import { problemStatus } from '@/state/selectors';
@@ -82,10 +83,16 @@ export function ProblemDetail({ problem: p }: { problem: Problem }) {
         <Collapse title="🔍 Check your work — verification & edge cases">
           <Labeled label={`Expected grain — ${p.verify.grain}`}><span className="mono">{p.verify.columns.join(', ')}</span></Labeled>
           {p.verify.sample && (
-            <table style={{ borderCollapse: 'collapse', fontSize: 12, margin: '6px 0' }}>
-              <thead><tr>{p.verify.sample.cols.map((c) => (<th key={c} className="mono" style={{ textAlign: 'left', padding: '3px 10px 3px 0', color: 'var(--t-3)' }}>{c}</th>))}</tr></thead>
-              <tbody>{p.verify.sample.rows.map((row, ri) => (<tr key={ri}>{row.map((cell, ci) => (<td key={ci} className="mono" style={{ padding: '3px 10px 3px 0', color: 'var(--t-2)' }}>{cell}</td>))}</tr>))}</tbody>
-            </table>
+            <Table withTableBorder withColumnBorders striped className="mono" fz="xs" mt="xs" mb="xs" w="auto">
+              <Table.Thead>
+                <Table.Tr>{p.verify.sample.cols.map((c) => (<Table.Th key={c}>{c}</Table.Th>))}</Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {p.verify.sample.rows.map((row, ri) => (
+                  <Table.Tr key={ri}>{row.map((cell, ci) => (<Table.Td key={ci}>{cell}</Table.Td>))}</Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
           )}
           <Labeled label="Common wrong answers"><List items={p.verify.commonWrong} /></Labeled>
           <Labeled label="Validation"><List items={p.verify.validation} /></Labeled>
@@ -97,12 +104,12 @@ export function ProblemDetail({ problem: p }: { problem: Problem }) {
       {p.teaches && <Labeled label="🎓 What this problem teaches"><span dangerouslySetInnerHTML={{ __html: p.teaches }} /></Labeled>}
 
       <Labeled label="Track your progress">
-        <div className="pill-row">
+        <Group gap={6}>
           <Button small variant={status === 'attempted' ? 'primary' : 'default'} onClick={() => setProblemStatus(p.id, 'attempted')}>Attempted</Button>
           <Button small variant={status === 'completed' ? 'primary' : 'default'} onClick={() => setProblemStatus(p.id, 'completed')}>✓ Completed</Button>
           <Button small variant={status === 'review' ? 'primary' : 'default'} onClick={() => setProblemStatus(p.id, 'review')}>🚩 Needs review</Button>
           <Tag color="grey">Mode: {MODE_LABEL[p.mode]}</Tag>
-        </div>
+        </Group>
       </Labeled>
     </div>
   );

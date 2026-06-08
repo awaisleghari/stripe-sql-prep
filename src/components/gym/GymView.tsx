@@ -1,3 +1,5 @@
+import { Tabs, Group, Badge } from '@mantine/core';
+import { IconRoute, IconTargetArrow, IconSearch, IconFlag } from '@tabler/icons-react';
 import { PROBLEMS } from '@/data/gym';
 import { useProgress, setGymTab } from '@/state/progressStore';
 import { gymCounts, problemStatus } from '@/state/selectors';
@@ -7,13 +9,6 @@ import { GuidedPath } from './GuidedPath';
 import { FocusMode } from './FocusMode';
 import { BrowseAll } from './BrowseAll';
 import { ReviewQueue } from './ReviewQueue';
-
-const TABS: { id: GymTab; label: string }[] = [
-  { id: 'path', label: '🧭 Guided Path' },
-  { id: 'focus', label: '🎯 Focus Mode' },
-  { id: 'browse', label: '🔎 Browse all' },
-  { id: 'review', label: '🚩 Review queue' },
-];
 
 export function GymView() {
   const state = useProgress();
@@ -26,19 +21,32 @@ export function GymView() {
         A focused, one-problem-at-a-time runner of original Stripe-flavoured drills. Pick a ladder in Guided Path and press Start
         to drop into Focus Mode.
       </p>
-      <div className="pill-row" style={{ margin: '6px 0 14px' }}>
+      <Group gap={6} mb="md">
         <Tag color="green">{counts.completed} / {counts.total} completed</Tag>
         <Tag color="blue">{counts.attempted} attempted</Tag>
         {counts.review > 0 && <Tag color="volcano">{counts.review} flagged</Tag>}
-      </div>
-      <div className="tabs" style={{ marginBottom: 16 }}>
-        {TABS.map((t) => (
-          <div key={t.id} className={`tab ${state.gym.tab === t.id ? 'active' : ''}`} onClick={() => setGymTab(t.id)}>
-            {t.label}{t.id === 'review' && reviewN ? ` (${reviewN})` : ''}
-          </div>
-        ))}
-      </div>
-      {state.gym.tab === 'focus' ? <FocusMode /> : state.gym.tab === 'browse' ? <BrowseAll /> : state.gym.tab === 'review' ? <ReviewQueue /> : <GuidedPath />}
+      </Group>
+
+      <Tabs value={state.gym.tab} onChange={(v) => v && setGymTab(v as GymTab)} keepMounted={false}>
+        <Tabs.List>
+          <Tabs.Tab value="path" color="brand" leftSection={<IconRoute size={15} />}>Guided Path</Tabs.Tab>
+          <Tabs.Tab value="focus" color="grape" leftSection={<IconTargetArrow size={15} />}>Focus Mode</Tabs.Tab>
+          <Tabs.Tab value="browse" color="cyan" leftSection={<IconSearch size={15} />}>Browse all</Tabs.Tab>
+          <Tabs.Tab
+            value="review"
+            color="orange"
+            leftSection={<IconFlag size={15} />}
+            rightSection={reviewN ? <Badge size="xs" circle variant="filled" color="orange">{reviewN}</Badge> : null}
+          >
+            Review queue
+          </Tabs.Tab>
+        </Tabs.List>
+
+        <Tabs.Panel value="path" pt="md"><GuidedPath /></Tabs.Panel>
+        <Tabs.Panel value="focus" pt="md"><FocusMode /></Tabs.Panel>
+        <Tabs.Panel value="browse" pt="md"><BrowseAll /></Tabs.Panel>
+        <Tabs.Panel value="review" pt="md"><ReviewQueue /></Tabs.Panel>
+      </Tabs>
     </div>
   );
 }

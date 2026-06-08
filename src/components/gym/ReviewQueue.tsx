@@ -1,3 +1,4 @@
+import { SimpleGrid, Paper, Text } from '@mantine/core';
 import { PROBLEMS } from '@/data/gym';
 import { useProgress, focusProblem } from '@/state/progressStore';
 import { problemStatus } from '@/state/selectors';
@@ -16,16 +17,24 @@ export function ReviewQueue() {
           Nothing flagged for review. Mark a problem <b>Needs review</b> in Focus Mode and it collects here.
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(258px,1fr))', gap: 12 }}>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
           {list.map((p) => (
-            <div key={p.id} className="card" style={{ padding: '14px 15px', cursor: 'pointer' }} onClick={() => focusProblem(p.id, p.ladder)}>
-              <strong style={{ fontSize: 14 }}>{p.title}</strong>
-              <div style={{ marginTop: 10 }}>
-                <Button small variant="primary" onClick={(e) => { e.stopPropagation(); focusProblem(p.id, p.ladder); }}>Reopen →</Button>
-              </div>
-            </div>
+            <Paper key={p.id} withBorder p="md" radius="md" className="browse-card" onClick={() => focusProblem(p.id, p.ladder)}>
+              <Text fw={600} size="sm" lineClamp={2}>{p.title}</Text>
+              <Button
+                small
+                variant="primary"
+                style={{ marginTop: 10 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  focusProblem(p.id, p.ladder);
+                }}
+              >
+                Reopen →
+              </Button>
+            </Paper>
           ))}
-        </div>
+        </SimpleGrid>
       )}
     </div>
   );
