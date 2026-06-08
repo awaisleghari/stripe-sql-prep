@@ -73,6 +73,8 @@ describe('Newly built SQL modules + ladders', () => {
     { mid: 'm9', title: 'Funnel Analysis', lid: 'fun' },
     { mid: 'm10', title: 'Retention & Cohort Analysis', lid: 'ret' },
     { mid: 'm13', title: 'Failed-Payment Recovery', lid: 'rec' },
+    { mid: 'm14', title: 'Anomaly Detection', lid: 'anom' },
+    { mid: 'm15', title: 'Experimentation & A/B Testing', lid: 'ab' },
   ];
   for (const { mid, title, lid } of pairs) {
     it(`${mid} module exists ("${title}") with a 5-question quiz + drills`, () => {
@@ -103,9 +105,9 @@ describe('Newly built SQL modules + ladders', () => {
 });
 
 describe('migrated dataset size', () => {
-  it('has all 108 problems and 14 ladders', () => {
-    expect(PROBLEMS.length).toBe(108);
-    expect(LADDERS.length).toBe(14);
+  it('has all 124 problems and 16 ladders', () => {
+    expect(PROBLEMS.length).toBe(124);
+    expect(LADDERS.length).toBe(16);
   });
   it('every ladder problem-count matches its problemIds', () => {
     const byLadder: Record<string, number> = {};
@@ -172,8 +174,8 @@ describe('module data integrity', () => {
     }
   });
 
-  it('has all 14 migrated modules, each with concept, predicts, debugs and exercises', () => {
-    expect(MODULES.length).toBe(14);
+  it('has all 16 migrated modules, each with concept, predicts, debugs and exercises', () => {
+    expect(MODULES.length).toBe(16);
     for (const m of MODULES) {
       expect(m.concept, `concept for ${m.id}`).toBeTruthy();
       expect(m.predicts.length, `predicts for ${m.id}`).toBeGreaterThanOrEqual(1);

@@ -8,3 +8,4 @@ playwright-report
 test-results
 .vscode/*
 !.vscode/extensions.json
+.claude/launch.json

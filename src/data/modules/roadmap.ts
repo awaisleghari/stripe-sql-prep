@@ -59,8 +59,8 @@ export const MODULE_ROADMAP: RoadmapDay[] = [
     day: 'Day 6',
     theme: 'Advanced & Interview',
     slots: [
-      { id: 'm14', locked: true, lockedTitle: 'Anomaly Detection' },
-      { id: 'm15', locked: true, lockedTitle: 'Experimentation & A/B Testing' },
+      { id: 'm14', locked: false },
+      { id: 'm15', locked: false },
       { id: 'm16', locked: true, lockedTitle: 'Mock Interview Mode' },
     ],
   },

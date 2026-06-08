@@ -13,9 +13,11 @@ import { m10 } from './m10';
 import { m11 } from './m11';
 import { m12 } from './m12';
 import { m13 } from './m13';
+import { m14 } from './m14';
+import { m15 } from './m15';
 
 /** Ordered learning trail. Add a module file and append it here. */
-export const MODULES: Module[] = [m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13];
+export const MODULES: Module[] = [m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15];
 
 const BY_ID = new Map<ModuleId, Module>(MODULES.map((m) => [m.id, m]));
 export function getModule(id: ModuleId | null | undefined): Module | undefined {

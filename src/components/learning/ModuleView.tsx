@@ -25,6 +25,7 @@ import { PRIORITY_META } from '@/utils/formatters';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Labeled } from '@/components/ui/Labeled';
 import { Button } from '@/components/ui/Button';
+import { SqlConsole } from '@/components/sql/SqlConsole';
 import { wrapProse } from '@/utils/richText';
 
 const html = (s: string) => ({ __html: s });
@@ -231,6 +232,7 @@ function DebugTab({ m }: { m: Module }) {
 function ExercisesTab({ m }: { m: Module }) {
   const state = useProgress();
   const att = state.modules[m.id]?.att ?? {};
+  const isSql = !!m.sqlPattern; // SQL modules carry a core SQL pattern; gate the runner on it
   const sorted = [...m.exercises].sort((a, b) => a.lvl - b.lvl);
   const doneCount = sorted.filter((ex) => att[ex.id]).length;
   const pct = sorted.length ? Math.round((doneCount / sorted.length) * 100) : 0;
@@ -285,6 +287,7 @@ function ExercisesTab({ m }: { m: Module }) {
                     </Accordion.Item>
                   </Accordion>
                 )}
+                {isSql && ex.solution && <SqlConsole solution={ex.solution} label="Run this drill — live Postgres sandbox" />}
                 <Group mt="md">
                   <Button
                     small

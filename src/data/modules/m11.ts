@@ -164,7 +164,7 @@ export const m11: Module = {
         "Filter status='active'.",
         "CASE on interval to divide annual by 12."
       ],
-      "solution": "SELECT SUM(\n  CASE WHEN interval='year' THEN amount/12.0 ELSE amount END\n)/100.0 AS mrr_usd\nFROM subscriptions\nWHERE status='active' AND currency='usd';"
+      "solution": "SELECT SUM(\n  CASE WHEN interval='year' THEN amount/12.0 ELSE amount END\n)/100.0 AS mrr_usd\nFROM subscriptions\nWHERE status='active';"
     }
   ],
   "quiz": [

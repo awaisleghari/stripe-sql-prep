@@ -9,6 +9,8 @@ import { retentionProblems } from './sql/retention';
 import { revenueProblems } from './sql/revenue';
 import { refundsProblems } from './sql/refunds';
 import { recoveryProblems } from './sql/recovery';
+import { anomalyProblems } from './sql/anomaly';
+import { abProblems } from './sql/ab';
 import { logicProblems } from './logic';
 import { pythonProblems } from './python';
 import { productProblems } from './product';
@@ -17,7 +19,7 @@ import { experimentProblems } from './experiment';
 export { LADDERS } from './ladders';
 
 /** All gym problems, in ladder order. Add a category file's array to this list. */
-export const PROBLEMS: Problem[] = [...conditionalProblems, ...joinsProblems, ...cteProblems, ...windowProblems, ...datetimeProblems, ...funnelProblems, ...retentionProblems, ...revenueProblems, ...refundsProblems, ...recoveryProblems, ...logicProblems, ...pythonProblems, ...productProblems, ...experimentProblems];
+export const PROBLEMS: Problem[] = [...conditionalProblems, ...joinsProblems, ...cteProblems, ...windowProblems, ...datetimeProblems, ...funnelProblems, ...retentionProblems, ...revenueProblems, ...refundsProblems, ...recoveryProblems, ...anomalyProblems, ...abProblems, ...logicProblems, ...pythonProblems, ...productProblems, ...experimentProblems];
 
 const BY_ID = new Map<ProblemId, Problem>(PROBLEMS.map((p) => [p.id, p]));
 export function getProblem(id: ProblemId | null | undefined): Problem | undefined {

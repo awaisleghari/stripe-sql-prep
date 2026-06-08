@@ -183,6 +183,42 @@ export const LADDERS: Ladder[] = [
     ]
   },
   {
+    "id": "anom",
+    "title": "Anomaly Detection",
+    "category": "sql",
+    "module": "m14",
+    "concept": "anomaly",
+    "blurb": "Trailing baseline that excludes today, z-score, a threshold, and a volume floor so thin days don't page.",
+    "problemIds": [
+      "an1",
+      "an2",
+      "an3",
+      "an4",
+      "an5",
+      "an6",
+      "an7",
+      "an8"
+    ]
+  },
+  {
+    "id": "ab",
+    "title": "Experimentation & A/B Testing",
+    "category": "sql",
+    "module": "m15",
+    "concept": "experiment",
+    "blurb": "ITT conversion and lift, a guardrail next to the primary metric, and the no-peeking / significance caveats.",
+    "problemIds": [
+      "ab1",
+      "ab2",
+      "ab3",
+      "ab4",
+      "ab5",
+      "ab6",
+      "ab7",
+      "ab8"
+    ]
+  },
+  {
     "id": "logic",
     "title": "Problem Solving & Data Logic",
     "category": "skill",

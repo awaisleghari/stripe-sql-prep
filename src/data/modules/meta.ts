@@ -62,4 +62,12 @@ export const MODULE_META: Record<ModuleId, { why: string; outcome: string }> = {
     why: 'Refund and dispute rates are watched by card networks; the denominator and late-arriving timing are exactly where answers go wrong.',
     outcome: 'compute refund / dispute rates with the right denominator and attribute late-arriving disputes correctly.',
   },
+  m14: {
+    why: 'On-call and fraud questions ask whether today is abnormal, and "it looks high" is meaningless without a baseline, a scale and a volume floor.',
+    outcome: 'build a trailing baseline that excludes the current period, score it with a z-score, and flag spikes without firing on thin volume.',
+  },
+  m15: {
+    why: 'A/B results lie through the denominator, peeking and metric-shopping; the senior read is intention-to-treat with guardrails on a pre-registered metric.',
+    outcome: 'compute ITT conversion and lift, pair the primary metric with a guardrail, and defend the no-peeking and significance caveats.',
+  },
 };

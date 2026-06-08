@@ -8,6 +8,9 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  // PGlite ships its own WASM and must not be pre-bundled by esbuild. It is only ever reached
+  // via a dynamic import() from the SQL console, so Rollup code-splits it into its own chunk.
+  optimizeDeps: { exclude: ['@electric-sql/pglite'] },
   build: {
     outDir: 'dist',
     sourcemap: true,
