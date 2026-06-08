@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Group, SimpleGrid, TextInput, Text } from '@mantine/core';
+import { IconSearch } from '@tabler/icons-react';
 import { PYSQL } from '@/data/pysql';
 import { setRoute } from '@/state/progressStore';
 import { Card } from '@/components/ui/Card';
@@ -14,20 +16,21 @@ export function ReasoningView() {
         A lookup table from a plain-English data question to the SQL pattern that answers it. The Python column is optional
         support; the <b>SQL pattern</b> and the <b>common trap</b> are what matter in an interview.
       </p>
-      <div className="pill-row" style={{ marginBottom: 14 }}>
+      <Group mb="md">
         <Button small variant="primary" onClick={() => setRoute('gym')}>Drill these patterns in the Gym →</Button>
-      </div>
-      <input
+      </Group>
+      <TextInput
         placeholder="Filter… e.g. window, dedup, rolling, join, rate"
         value={q}
-        onChange={(e) => setQ(e.target.value)}
-        style={{ width: '100%', padding: '11px 14px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 14, marginBottom: 16, background: 'var(--fill)', color: 'var(--t-1)', fontFamily: 'var(--font)' }}
+        onChange={(e) => setQ(e.currentTarget.value)}
+        leftSection={<IconSearch size={16} />}
+        mb="md"
       />
       <p className="page-sub" style={{ margin: '0 0 10px' }}>{rows.length} of {PYSQL.length} patterns</p>
       {rows.map((r, i) => (
         <Card key={i}>
-          <div style={{ fontWeight: 650, fontSize: 14, marginBottom: 10 }}>{r.plain}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <Text fw={650} mb={10}>{r.plain}</Text>
+          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
             <div>
               <div className="section-label" style={{ marginBottom: 4 }}>SQL pattern</div>
               <CodeBlock>{r.sql}</CodeBlock>
@@ -36,13 +39,13 @@ export function ReasoningView() {
               <div className="section-label" style={{ marginBottom: 4 }}>Plain Python support</div>
               <CodeBlock>{r.py}</CodeBlock>
             </div>
-          </div>
-          <div style={{ fontSize: 12.2, color: 'var(--t-2)', marginTop: 10 }}>
-            <b style={{ color: 'var(--c-warning)' }}>⚠ common trap:</b> {r.trap}
-          </div>
-          <div style={{ fontSize: 12.2, color: 'var(--t-2)', marginTop: 5 }}>
-            <b style={{ color: 'var(--c-success)' }}>▸ Stripe example:</b> {r.stripe}
-          </div>
+          </SimpleGrid>
+          <Text size="xs" c="dimmed" mt="sm">
+            <Text span fw={700} c="yellow">⚠ common trap:</Text> {r.trap}
+          </Text>
+          <Text size="xs" c="dimmed" mt={5}>
+            <Text span fw={700} c="teal">▸ Stripe example:</Text> {r.stripe}
+          </Text>
         </Card>
       ))}
     </div>

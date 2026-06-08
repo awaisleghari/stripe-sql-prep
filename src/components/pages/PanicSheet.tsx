@@ -1,3 +1,4 @@
+import { Group, Title } from '@mantine/core';
 import { PANIC } from '@/data/panic';
 import { setRoute } from '@/state/progressStore';
 import { Card } from '@/components/ui/Card';
@@ -11,12 +12,12 @@ export function PanicSheet() {
         Your one-screen reference for the final hour. Read this the morning of — <b>do not cram new material</b>. Reinforce
         the reasoning loop, the top patterns, the classic traps, and the phrases that signal senior judgment.
       </p>
-      <div className="pill-row" style={{ marginBottom: 14 }}>
+      <Group mb="md">
         <Button small variant="primary" onClick={() => setRoute('mock')}>Do one final mock →</Button>
-      </div>
+      </Group>
       {PANIC.map((s, i) => (
         <Card key={i}>
-          <h3 style={{ margin: '0 0 10px', fontSize: 15 }}>{s.h}</h3>
+          <Title order={3} fz={15} mb={10}>{s.h}</Title>
           {s.code && <CodeBlock>{s.code}</CodeBlock>}
           {s.items && (
             <ul className="prose" style={{ margin: 0 }}>

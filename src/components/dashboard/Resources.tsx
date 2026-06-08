@@ -1,3 +1,4 @@
+import { Group, Anchor } from '@mantine/core';
 import { RESOURCES, RESOURCE_MAP } from '@/data/resources';
 import { PROBLEMS, LADDERS } from '@/data/gym';
 import { useProgress, setFilters, selectLadder, setGymTab, setRoute } from '@/state/progressStore';
@@ -27,14 +28,14 @@ export function Resources() {
         const label = map?.label ?? (map?.ladder ? LADDERS.find((l) => l.id === map.ladder)?.title : undefined) ?? map?.source?.replace('-style', '');
         return (
           <Card key={r.name}>
-            <div className="pill-row" style={{ marginBottom: 6 }}>
+            <Group gap={6} mb={6}>
               <Tag color="blue">{r.day}</Tag>
               {label && <Tag color="geekblue">{label}</Tag>}
               {map && <Tag color="grey">{n} matching problem{n === 1 ? '' : 's'}</Tag>}
-            </div>
-            <div style={{ fontWeight: 650 }}>
-              <a href={r.url} target="_blank" rel="noopener">{r.name} ↗</a>
-            </div>
+            </Group>
+            <Anchor href={r.url} target="_blank" rel="noopener" fw={650}>
+              {r.name} ↗
+            </Anchor>
             <p className="page-sub" style={{ marginBottom: map ? 8 : 0 }}>{r.use}</p>
             {map && n > 0 && (
               <Button
@@ -42,7 +43,7 @@ export function Resources() {
                 variant="primary"
                 onClick={() => {
                   if (map.ladder) {
-                    selectLadder(map.ladder); // Guided Path for that ladder
+                    selectLadder(map.ladder);
                   } else {
                     setFilters(map.mode ? { mode: map.mode } : map.source ? { source: map.source } : {});
                     setGymTab('browse');

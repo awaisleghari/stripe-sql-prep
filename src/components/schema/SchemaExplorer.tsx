@@ -1,3 +1,4 @@
+import { Group, Table, Text } from '@mantine/core';
 import { SCHEMA } from '@/data/schema';
 import { Card } from '@/components/ui/Card';
 import { Tag } from '@/components/ui/Tag';
@@ -11,21 +12,21 @@ export function SchemaExplorer() {
       </p>
       {SCHEMA.map((t) => (
         <Card key={t.name}>
-          <div className="pill-row" style={{ marginBottom: 6 }}>
-            <strong className="mono" style={{ fontSize: 15 }}>{t.name}</strong>
+          <Group gap={8} mb={6} align="center">
+            <Text className="mono" fw={700} fz={15}>{t.name}</Text>
             <Tag color="grey">{t.columns.length} columns</Tag>
-          </div>
+          </Group>
           <p className="page-sub" style={{ marginTop: 0 }}>{t.desc}</p>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
-            <tbody>
+          <Table className="mono" fz="xs" verticalSpacing={5} withRowBorders>
+            <Table.Tbody>
               {t.columns.map((c) => (
-                <tr key={c.name} style={{ borderTop: '1px solid var(--split)' }}>
-                  <td className="mono" style={{ padding: '5px 8px', color: 'var(--t-1)', whiteSpace: 'nowrap' }}>{c.name}</td>
-                  <td className="mono" style={{ padding: '5px 8px', color: 'var(--c-geekblue)' }}>{c.type}</td>
-                </tr>
+                <Table.Tr key={c.name}>
+                  <Table.Td style={{ whiteSpace: 'nowrap', color: 'var(--t-1)' }}>{c.name}</Table.Td>
+                  <Table.Td style={{ color: 'var(--c-geekblue)' }}>{c.type}</Table.Td>
+                </Table.Tr>
               ))}
-            </tbody>
-          </table>
+            </Table.Tbody>
+          </Table>
         </Card>
       ))}
     </div>

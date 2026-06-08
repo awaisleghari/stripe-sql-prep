@@ -1,3 +1,4 @@
+import { Group, SimpleGrid, Table, Title, Text } from '@mantine/core';
 import { MOCKS } from '@/data/mock';
 import { RUBRICS } from '@/data/rubrics';
 import { useProgress, setMockScore, setRoute } from '@/state/progressStore';
@@ -27,22 +28,22 @@ export function MockView() {
         as if live — talk aloud, state assumptions, define metric, grain and denominator before writing — then self-score.
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 12, marginBottom: 18 }}>
+      <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="sm" mb="md">
         <Card>
           <Tag color="green">Live</Tag>
-          <div style={{ fontWeight: 650, fontSize: 14, marginTop: 6 }}>{mock.title}</div>
-          <div className="page-sub">{mock.time}</div>
+          <Text fw={650} fz="sm" mt={6}>{mock.title}</Text>
+          <Text className="page-sub">{mock.time}</Text>
         </Card>
         {UPCOMING.map((mk) => (
           <Card key={mk.t}>
             <Tag color="grey">Expansion</Tag>
-            <div style={{ fontWeight: 650, fontSize: 14, marginTop: 6 }}>{mk.t}</div>
-            <div className="page-sub">{mk.time}</div>
+            <Text fw={650} fz="sm" mt={6}>{mk.t}</Text>
+            <Text className="page-sub">{mk.time}</Text>
           </Card>
         ))}
-      </div>
+      </SimpleGrid>
 
-      <h2 style={{ margin: '0 0 4px', fontSize: 17 }}>{mock.title} — {mock.time}</h2>
+      <Title order={2} fz={17} mb={4}>{mock.title} — {mock.time}</Title>
       <p className="page-sub" style={{ marginTop: 0 }}>{mock.blurb}</p>
       <Callout variant="interview" title="▸ How to run this like a real interview">
         Set a {mock.time} timer. For each component: restate the question, ask clarifying questions, define the metric, grain
@@ -57,34 +58,36 @@ export function MockView() {
         const total = Object.values(scores).reduce((a, b) => a + b, 0);
         return (
           <Card key={i}>
-            <div className="pill-row" style={{ marginBottom: 8 }}>
+            <Group gap={6} mb="xs">
               <Tag color="grey">Component {i + 1}</Tag>
               <Tag color="geekblue">{c.kind}</Tag>
               <Tag color="grey">rubric: {rb.name} (/{rb.max})</Tag>
-            </div>
-            <div className="prose" style={{ fontSize: 13.5 }}>{c.prompt}</div>
+            </Group>
+            <div className="prose" style={{ fontSize: 14 }}>{c.prompt}</div>
             {c.guidance && <p className="page-sub" style={{ marginTop: 8 }}>{c.guidance}</p>}
             <Collapse title="✅ Reference solution / framework — reveal after you commit">
               <CodeBlock>{c.solution}</CodeBlock>
               {c.notes && <ul className="prose" style={{ marginTop: 8 }}>{c.notes.map((n, j) => <li key={j}>{n}</li>)}</ul>}
             </Collapse>
             <Collapse title={`📋 ${rb.name} rubric — self-score (${total}/${rb.max})`}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
-                <tbody>
+              <Table fz="xs" verticalSpacing={6} withRowBorders>
+                <Table.Tbody>
                   {rb.criteria.map((cr, ci) => (
-                    <tr key={ci} style={{ borderTop: '1px solid var(--split)' }}>
-                      <td style={{ padding: '6px 8px', fontWeight: 600, width: '30%' }}>{cr.c}</td>
-                      <td style={{ padding: '6px 8px', color: 'var(--t-2)' }}>{cr.two}</td>
-                      <td style={{ padding: '6px 8px', whiteSpace: 'nowrap' }}>
-                        {[0, 1, 2].map((n) => (
-                          <Button key={n} small variant={scores[ci] === n ? 'primary' : 'default'} onClick={() => setMockScore(key, ci, n)} style={{ marginLeft: 4 }}>{n}</Button>
-                        ))}
-                      </td>
-                    </tr>
+                    <Table.Tr key={ci}>
+                      <Table.Td style={{ fontWeight: 600, width: '30%' }}>{cr.c}</Table.Td>
+                      <Table.Td c="dimmed">{cr.two}</Table.Td>
+                      <Table.Td style={{ whiteSpace: 'nowrap' }}>
+                        <Group gap={4} justify="flex-end" wrap="nowrap">
+                          {[0, 1, 2].map((n) => (
+                            <Button key={n} small variant={scores[ci] === n ? 'primary' : 'default'} onClick={() => setMockScore(key, ci, n)}>{n}</Button>
+                          ))}
+                        </Group>
+                      </Table.Td>
+                    </Table.Tr>
                   ))}
-                </tbody>
-              </table>
-              <div style={{ marginTop: 8, fontWeight: 600 }}>Total: {total} / {rb.max}</div>
+                </Table.Tbody>
+              </Table>
+              <Text fw={600} mt="xs">Total: {total} / {rb.max}</Text>
             </Collapse>
           </Card>
         );
@@ -95,9 +98,9 @@ export function MockView() {
         Handle NULLs, duplicates, fan-out and late-arriving data? Validate the result? Could you explain every query aloud in
         two sentences?
       </Callout>
-      <div className="pill-row" style={{ marginTop: 14 }}>
+      <Group mt="md">
         <Button variant="primary" onClick={() => setRoute('panic')}>Review the Panic Sheet →</Button>
-      </div>
+      </Group>
     </div>
   );
 }
