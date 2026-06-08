@@ -13,6 +13,7 @@ import {
   IconTargetArrow,
   IconCircleCheck,
   IconCircleX,
+  type Icon as TablerIcon,
 } from '@tabler/icons-react';
 import type { Predict, Debug, Module, Badge as ModuleBadge, TagColor, ReasoningFramework } from '@/types';
 import { MODULES, getModule } from '@/data/modules';
@@ -66,6 +67,27 @@ function TabEmpty({ children }: { children: React.ReactNode }) {
   return <div className="empty-state">{children}</div>;
 }
 
+type ModuleTab = {
+  value: string;
+  label: string;
+  color: string;
+  accent: string;
+  Icon: TablerIcon;
+  Comp: React.ComponentType<{ m: Module }>;
+};
+
+/** Each section owns a hue — the tab, its ink bar, and the accent spine on its content. */
+const MODULE_TABS: ModuleTab[] = [
+  { value: 'concept', label: 'Concept', color: 'blue', accent: '#6f9bff', Icon: IconBulb, Comp: ConceptTab },
+  { value: 'predict', label: 'Predict', color: 'grape', accent: '#b692f6', Icon: IconEye, Comp: PredictTab },
+  { value: 'debug', label: 'Debug', color: 'orange', accent: '#f0976b', Icon: IconBug, Comp: DebugTab },
+  { value: 'exercises', label: 'Exercises', color: 'teal', accent: '#46c98b', Icon: IconStairsUp, Comp: ExercisesTab },
+  { value: 'pitfalls', label: 'Pitfalls', color: 'red', accent: '#f0726b', Icon: IconAlertTriangle, Comp: PitfallsTab },
+  { value: 'interview', label: 'Interview', color: 'cyan', accent: '#4dc9d6', Icon: IconMicrophone, Comp: InterviewTab },
+  { value: 'quiz', label: 'Quiz', color: 'yellow', accent: '#e6c14b', Icon: IconChecklist, Comp: QuizTab },
+  { value: 'confidence', label: 'Confidence', color: 'green', accent: '#5fd28a', Icon: IconGauge, Comp: ConfidenceTab },
+];
+
 export function ModuleView() {
   const state = useProgress();
   const active = state.activeModuleId ?? MODULES[0].id;
@@ -103,24 +125,19 @@ export function ModuleView() {
 
       <Tabs defaultValue="concept" keepMounted={false} variant="default">
         <Tabs.List>
-          <Tabs.Tab value="concept" color="blue" leftSection={<IconBulb size={15} />}>Concept</Tabs.Tab>
-          <Tabs.Tab value="predict" color="grape" leftSection={<IconEye size={15} />}>Predict</Tabs.Tab>
-          <Tabs.Tab value="debug" color="orange" leftSection={<IconBug size={15} />}>Debug</Tabs.Tab>
-          <Tabs.Tab value="exercises" color="teal" leftSection={<IconStairsUp size={15} />}>Exercises</Tabs.Tab>
-          <Tabs.Tab value="pitfalls" color="red" leftSection={<IconAlertTriangle size={15} />}>Pitfalls</Tabs.Tab>
-          <Tabs.Tab value="interview" color="cyan" leftSection={<IconMicrophone size={15} />}>Interview</Tabs.Tab>
-          <Tabs.Tab value="quiz" color="yellow" leftSection={<IconChecklist size={15} />}>Quiz</Tabs.Tab>
-          <Tabs.Tab value="confidence" color="green" leftSection={<IconGauge size={15} />}>Confidence</Tabs.Tab>
+          {MODULE_TABS.map((t) => (
+            <Tabs.Tab key={t.value} value={t.value} color={t.color} leftSection={<t.Icon size={15} />}>
+              {t.label}
+            </Tabs.Tab>
+          ))}
         </Tabs.List>
-
-        <Tabs.Panel value="concept" pt="lg"><ConceptTab m={m} /></Tabs.Panel>
-        <Tabs.Panel value="predict" pt="lg"><PredictTab m={m} /></Tabs.Panel>
-        <Tabs.Panel value="debug" pt="lg"><DebugTab m={m} /></Tabs.Panel>
-        <Tabs.Panel value="exercises" pt="lg"><ExercisesTab m={m} /></Tabs.Panel>
-        <Tabs.Panel value="pitfalls" pt="lg"><PitfallsTab m={m} /></Tabs.Panel>
-        <Tabs.Panel value="interview" pt="lg"><InterviewTab m={m} /></Tabs.Panel>
-        <Tabs.Panel value="quiz" pt="lg"><QuizTab m={m} /></Tabs.Panel>
-        <Tabs.Panel value="confidence" pt="lg"><ConfidenceTab m={m} /></Tabs.Panel>
+        {MODULE_TABS.map((t) => (
+          <Tabs.Panel key={t.value} value={t.value} pt="lg">
+            <div className="tab-accent" style={{ ['--accent' as string]: t.accent } as React.CSSProperties}>
+              <t.Comp m={m} />
+            </div>
+          </Tabs.Panel>
+        ))}
       </Tabs>
     </div>
   );

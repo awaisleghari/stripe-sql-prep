@@ -110,8 +110,17 @@
 
 /* ---------- Premium polish: rings, glows, motion ---------- */
 .grad-ring { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
-.grad-ring svg { filter: drop-shadow(0 3px 12px rgba(110, 142, 251, .42)); }
-.grad-ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.grad-ring svg { position: relative; z-index: 1; filter: drop-shadow(0 3px 12px rgba(110, 142, 251, .42)); }
+.grad-ring::before { content: ''; position: absolute; inset: 20%; border-radius: 50%; background: radial-gradient(circle, rgba(110, 142, 251, .16), transparent 72%); z-index: 0; pointer-events: none; }
+.grad-ring-label { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+/* Per-tab accent: each learning section owns a hue (spine + labels) */
+.tab-accent .section-label { color: var(--accent); }
+.tab-accent .mantine-Paper-root { box-shadow: inset 3px 0 0 0 var(--accent), 0 10px 26px -20px rgba(0, 0, 0, .55); }
+
+/* Dashboard category cards — subtle live hover */
+.cov-card { transition: border-color .16s ease, transform .16s ease; }
+.cov-card:hover { border-color: rgba(110, 142, 251, .32); transform: translateY(-1px); }
 .grad-ring-pct { font-size: 31px; font-weight: 800; line-height: 1; letter-spacing: -.5px; background: linear-gradient(120deg, #cfd9ff, #a7f3d0); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .grad-ring-sub { font-size: 10.5px; color: var(--t-3); letter-spacing: .8px; text-transform: uppercase; margin-top: 4px; }
 
@@ -134,10 +143,16 @@
 .mantine-Button-root[data-variant='gradient'] { box-shadow: 0 8px 20px -10px rgba(110, 142, 251, .7); }
 .mantine-Button-root[data-variant='gradient']:hover { box-shadow: 0 12px 26px -10px rgba(110, 142, 251, .9); filter: brightness(1.06); }
 
-/* Content entrance */
-.content-inner { animation: contentIn .4s cubic-bezier(.2, .8, .2, 1) both; }
-@keyframes contentIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .content-inner { animation: none; } }
+/* Content entrance — gentle staggered rise of the top-level cards */
+.content-inner > div > * { animation: cardIn .5s cubic-bezier(.2, .8, .2, 1) both; }
+.content-inner > div > *:nth-child(1) { animation-delay: .02s; }
+.content-inner > div > *:nth-child(2) { animation-delay: .07s; }
+.content-inner > div > *:nth-child(3) { animation-delay: .12s; }
+.content-inner > div > *:nth-child(4) { animation-delay: .17s; }
+.content-inner > div > *:nth-child(5) { animation-delay: .22s; }
+.content-inner > div > *:nth-child(n+6) { animation-delay: .26s; }
+@keyframes cardIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .content-inner > div > * { animation: none; } }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {

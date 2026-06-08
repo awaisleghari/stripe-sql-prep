@@ -131,7 +131,7 @@ export function Dashboard() {
           {cov.map((c) => {
             const done = c.completed === c.total;
             return (
-              <Paper key={c.mode} withBorder p="sm" radius="md">
+              <Paper key={c.mode} withBorder p="sm" radius="md" className="cov-card">
                 <Group justify="space-between" align="center">
                   <Group gap={8} wrap="nowrap">
                     <span style={{ width: 9, height: 9, borderRadius: 99, flex: '0 0 auto', background: `var(--mantine-color-${MODE_COLOR[c.mode]}-5)` }} />
