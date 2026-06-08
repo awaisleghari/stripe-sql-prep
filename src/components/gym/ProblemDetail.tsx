@@ -1,4 +1,5 @@
 import { Group, Table } from '@mantine/core';
+import { wrapProse } from '@/utils/richText';
 import type { Problem } from '@/types';
 import { useProgress, setProblemStatus } from '@/state/progressStore';
 import { problemStatus } from '@/state/selectors';
@@ -12,9 +13,9 @@ import { Labeled } from '@/components/ui/Labeled';
 
 function List({ items }: { items: string[] }) {
   return (
-    <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
+    <ul className="prose" style={{ margin: '4px 0 0', paddingLeft: 18 }}>
       {items.map((x, i) => (
-        <li key={i} dangerouslySetInnerHTML={{ __html: x }} />
+        <li key={i} dangerouslySetInnerHTML={{ __html: wrapProse(x) }} />
       ))}
     </ul>
   );

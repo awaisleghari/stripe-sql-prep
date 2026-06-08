@@ -1,4 +1,5 @@
-import { RingProgress, Progress, Group, Stack, Text, SimpleGrid, Paper } from '@mantine/core';
+import { Progress, Group, Stack, Text, SimpleGrid, Paper } from '@mantine/core';
+import { GradientRing } from '@/components/ui/GradientRing';
 import { IconBook2, IconBarbell, IconTargetArrow, IconLifebuoy } from '@tabler/icons-react';
 import { MODULES } from '@/data/modules';
 import { LADDERS, PROBLEMS, getProblem } from '@/data/gym';
@@ -77,21 +78,10 @@ export function Dashboard() {
   return (
     <div>
       {/* blended readiness hero */}
-      <Card>
+      <Card className="hero-panel">
         <div className="section-label">Stripe interview readiness</div>
-        <Group align="center" gap="xl" mt="sm" wrap="nowrap">
-          <RingProgress
-            size={132}
-            thickness={11}
-            roundCaps
-            sections={[{ value: blend.overall, color: 'brand' }]}
-            label={
-              <div style={{ textAlign: 'center' }}>
-                <Text fw={800} fz={26} c="brand" lh={1}>{blend.overall}%</Text>
-                <Text fz="xs" c="dimmed">ready</Text>
-              </div>
-            }
-          />
+        <Group align="center" gap={32} mt="sm" wrap="nowrap">
+          <GradientRing value={blend.overall} />
           <Stack gap={10} style={{ flex: 1, minWidth: 0 }}>
             <Text size="sm" c="dimmed">Blended across foundation, practice, and simulation.</Text>
             <Pillar label="Foundation" pct={blend.foundation} color="blue" />

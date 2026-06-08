@@ -26,7 +26,7 @@ export function AppLayout({ route, readiness, children }: { route: Route; readin
       <div className="main">
         <Topbar crumb={crumb} readiness={readiness} />
         <main className="content">
-          <div className="content-inner">{children}</div>
+          <div className="content-inner" key={route}>{children}</div>
         </main>
       </div>
     </div>

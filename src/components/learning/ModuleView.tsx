@@ -23,8 +23,11 @@ import { PRIORITY_META } from '@/utils/formatters';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Labeled } from '@/components/ui/Labeled';
 import { Button } from '@/components/ui/Button';
+import { wrapProse } from '@/utils/richText';
 
 const html = (s: string) => ({ __html: s });
+/** Like html(), but also chips bare SQL keywords / identifiers in the text. */
+const richHtml = (s: string) => ({ __html: wrapProse(s) });
 
 const HOWTO =
   'Work the tabs left to right — Concept (mental model and SQL pattern), Predict an output, Debug a broken query, climb the Exercise ladder, study Pitfalls, rehearse the Interview script, then take the 5-question Quiz and rate your Confidence. Scoring 4/5 or better on the quiz (plus one harder exercise) marks the module interview-ready and lifts your readiness score.';
@@ -247,7 +250,7 @@ function ExercisesTab({ m }: { m: Module }) {
                       <Accordion.Panel>
                         <ul className="prose">
                           {ex.hints.map((h, i) => (
-                            <li key={i} dangerouslySetInnerHTML={html(h)} />
+                            <li key={i} dangerouslySetInnerHTML={richHtml(h)} />
                           ))}
                         </ul>
                       </Accordion.Panel>
@@ -294,7 +297,7 @@ function PitfallsTab({ m }: { m: Module }) {
           <SectionLabel>⚠ Common mistakes</SectionLabel>
           <ul className="prose">
             {m.mistakes!.map((x, i) => (
-              <li key={i} dangerouslySetInnerHTML={html(x)} />
+              <li key={i} dangerouslySetInnerHTML={richHtml(x)} />
             ))}
           </ul>
         </Paper>
@@ -304,7 +307,7 @@ function PitfallsTab({ m }: { m: Module }) {
           <SectionLabel>🧩 Edge cases</SectionLabel>
           <ul className="prose">
             {m.edges!.map((x, i) => (
-              <li key={i} dangerouslySetInnerHTML={html(x)} />
+              <li key={i} dangerouslySetInnerHTML={richHtml(x)} />
             ))}
           </ul>
         </Paper>
@@ -465,7 +468,7 @@ function DebugBlock({ debug }: { debug: Debug }) {
         <Accordion.Item value="hint">
           <Accordion.Control icon={<IconBulb size={16} color="var(--mantine-color-yellow-4)" />}>Hint</Accordion.Control>
           <Accordion.Panel>
-            <span className="prose" dangerouslySetInnerHTML={html(debug.hint)} />
+            <span className="prose" dangerouslySetInnerHTML={richHtml(debug.hint)} />
           </Accordion.Panel>
         </Accordion.Item>
         <Accordion.Item value="fix">
