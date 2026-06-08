@@ -22,8 +22,11 @@
 .brand-name { font-weight: 650; font-size: 14px; color: var(--t-1); letter-spacing: .1px; }
 .brand-sub { font-size: 11px; color: var(--t-3); margin-top: 2px; }
 
-.navmod-id { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--t-3); background: var(--fill-2); border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; line-height: 16px; flex: 0 0 auto; }
+.navmod-id { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--t-3); background: var(--fill-2); border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; line-height: 16px; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
 .mantine-NavLink-root[data-active] .navmod-id { color: #bcccff; border-color: var(--c-primary-border); background: var(--c-primary-bg); }
+.navmod-id-locked { color: var(--t-4); background: transparent; border-color: var(--split); }
+.app-nav .mantine-NavLink-root[data-disabled] { opacity: .55; }
+.app-nav .mantine-NavLink-root[data-disabled] .mantine-NavLink-rightSection { color: var(--c-gold); opacity: .8; }
 
 /* ---------- Topbar breadcrumb + readiness chip ---------- */
 .crumb { font-size: 13.5px; color: var(--t-3); display: inline-flex; align-items: center; min-width: 0; }

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { MODULES } from '@/data/modules';
+import { MODULES, getModule } from '@/data/modules';
+import { MODULE_ROADMAP } from '@/data/modules/roadmap';
 import { PROBLEMS, LADDERS, getProblem } from '@/data/gym';
 import { SCHEMA } from '@/data/schema';
 import { RESOURCES, RESOURCE_MAP } from '@/data/resources';
@@ -13,6 +14,31 @@ import { PANDAS_PATTERN, missingGuidedFields } from '@/utils/validation';
 import type { Mode } from '@/types';
 
 const VALID_MODES: Mode[] = ['SQL', 'Python', 'Pseudocode', 'DataLogic', 'Product', 'Experiment', 'Causal', 'Statistics', 'Object', 'Mixed'];
+
+describe('module roadmap', () => {
+  const slots = MODULE_ROADMAP.flatMap((d) => d.slots);
+
+  it('lists every built module and never drops one', () => {
+    const builtInRoadmap = slots.filter((s) => !s.locked).map((s) => s.id).sort();
+    const built = MODULES.map((m) => m.id).sort();
+    expect(builtInRoadmap).toEqual(built);
+  });
+
+  it('has unique, gap-free numbering m0..m16 with locked slots placeholders', () => {
+    const ids = slots.map((s) => s.id);
+    expect(new Set(ids).size).toBe(ids.length); // unique
+    expect(ids).toEqual(Array.from({ length: ids.length }, (_, i) => `m${i}`)); // m0..mN in order
+    // unlocked slots resolve to a real module; locked slots do not and carry a title
+    for (const s of slots) {
+      if (s.locked) {
+        expect(getModule(s.id)).toBeUndefined();
+        expect(s.lockedTitle && s.lockedTitle.length).toBeTruthy();
+      } else {
+        expect(getModule(s.id)).toBeTruthy();
+      }
+    }
+  });
+});
 
 describe('migrated dataset size', () => {
   it('has all 68 problems and 9 ladders', () => {
