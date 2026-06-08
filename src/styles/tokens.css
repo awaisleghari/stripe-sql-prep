@@ -1,6 +1,5 @@
-/* Design tokens — Ant Design v5 dark theme (see src/theme/antdTheme.ts) mirrored as
-   CSS variables so the custom-CSS views and the Ant-themed views stay on one palette.
-   Values track the original HTML build's richer dark palette. */
+/* Design tokens — mirror of the Mantine theme (see src/theme/mantineTheme.ts) as CSS
+   variables, so the custom-CSS view markup and the Mantine components stay on one palette. */
 :root {
   --c-primary: #6e8efb;
   --c-primary-hover: #8aa3fc;

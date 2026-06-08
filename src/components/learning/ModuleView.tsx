@@ -1,13 +1,28 @@
 import { useState } from 'react';
-import { Tabs, Card, Tag, Alert, Collapse, Radio, Button, Rate, Descriptions, Space } from 'antd';
-import type { TabsProps, CollapseProps, DescriptionsProps } from 'antd';
-import type { Predict, Debug, Module, Badge, TagColor, ReasoningFramework } from '@/types';
+import { Tabs, Paper, Badge, Alert, Accordion, Radio, Rating, Group, Stack } from '@mantine/core';
+import {
+  IconBulb,
+  IconEye,
+  IconBug,
+  IconStairsUp,
+  IconAlertTriangle,
+  IconMicrophone,
+  IconChecklist,
+  IconGauge,
+  IconInfoCircle,
+  IconTargetArrow,
+  IconCircleCheck,
+  IconCircleX,
+} from '@tabler/icons-react';
+import type { Predict, Debug, Module, Badge as ModuleBadge, TagColor, ReasoningFramework } from '@/types';
 import { MODULES, getModule } from '@/data/modules';
 import { MODULE_META } from '@/data/modules/meta';
 import { useProgress, answerQuiz, setConfidence, setModuleComplete, setRoute } from '@/state/progressStore';
 import { quizScore, moduleReady } from '@/utils/scoring';
 import { PRIORITY_META } from '@/utils/formatters';
 import { CodeBlock } from '@/components/ui/CodeBlock';
+import { Labeled } from '@/components/ui/Labeled';
+import { Button } from '@/components/ui/Button';
 
 const html = (s: string) => ({ __html: s });
 
@@ -17,25 +32,36 @@ const HOWTO =
 const CONF_LABEL = ['Not rated', 'New', 'Shaky', 'Familiar', 'Confident', 'Strong'];
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-/** Full-width vertical stack with a consistent gap (flex column → children stretch). */
-function Stack({ gap = 16, children }: { gap?: number; children: React.ReactNode }) {
-  return <div style={{ display: 'flex', flexDirection: 'column', gap }}>{children}</div>;
-}
-
-/** Map our internal TagColor palette to Ant Tag preset colors; 'grey' falls back to default. */
-const TAG_PRESET: Record<Exclude<TagColor, 'grey'>, string> = {
-  blue: 'blue',
-  geekblue: 'geekblue',
-  gold: 'gold',
-  green: 'green',
+const TAG_COLOR: Record<TagColor, string> = {
+  blue: 'brand',
+  geekblue: 'indigo',
+  gold: 'yellow',
+  green: 'teal',
+  grey: 'gray',
   red: 'red',
-  volcano: 'volcano',
+  volcano: 'orange',
 };
-function PaletteTag({ color, children }: { color: TagColor; children: React.ReactNode }) {
-  return color === 'grey' ? <Tag>{children}</Tag> : <Tag color={TAG_PRESET[color]}>{children}</Tag>;
+const BADGE_COLOR: Record<ModuleBadge, string> = { beginner: 'teal', intermediate: 'yellow', advanced: 'orange' };
+
+function PTag({ color, children }: { color: string; children: React.ReactNode }) {
+  return (
+    <Badge variant="light" color={color} radius="sm" fw={600} styles={{ label: { textTransform: 'none' } }}>
+      {children}
+    </Badge>
+  );
 }
 
-const BADGE_COLOR: Record<Badge, TagColor> = { beginner: 'green', intermediate: 'gold', advanced: 'volcano' };
+function SectionLabel({ children, mb = 8 }: { children: React.ReactNode; mb?: number }) {
+  return (
+    <div className="section-label" style={{ marginBottom: mb }}>
+      {children}
+    </div>
+  );
+}
+
+function TabEmpty({ children }: { children: React.ReactNode }) {
+  return <div className="empty-state">{children}</div>;
+}
 
 export function ModuleView() {
   const state = useProgress();
@@ -47,49 +73,54 @@ export function ModuleView() {
   const meta = MODULE_META[m.id];
   const conf = ms?.confidence ?? 0;
 
-  const tabs: TabsProps['items'] = [
-    { key: 'concept', label: 'Concept', children: <ConceptTab m={m} /> },
-    { key: 'predict', label: 'Predict', children: <PredictTab m={m} /> },
-    { key: 'debug', label: 'Debug', children: <DebugTab m={m} /> },
-    { key: 'exercises', label: 'Exercises', children: <ExercisesTab m={m} /> },
-    { key: 'pitfalls', label: 'Pitfalls', children: <PitfallsTab m={m} /> },
-    { key: 'interview', label: 'Interview', children: <InterviewTab m={m} /> },
-    { key: 'quiz', label: 'Quiz', children: <QuizTab m={m} /> },
-    { key: 'confidence', label: 'Confidence', children: <ConfidenceTab m={m} /> },
-  ];
-
   return (
     <div>
       <div className="mod-hero">
         <h1 className="hero-title">{m.title}</h1>
         {meta?.why && <p className="hero-why">{meta.why}</p>}
-        <Space size={6} wrap style={{ marginTop: 12 }}>
-          <PaletteTag color={BADGE_COLOR[m.badge]}>{cap(m.badge)}</PaletteTag>
-          <PaletteTag color="geekblue">{m.day}</PaletteTag>
-          <Tag>{CONF_LABEL[conf]}</Tag>
-          {ready && <Tag color="success">✓ Interview-ready</Tag>}
-        </Space>
-        <div className="ph-howto">
-          <span className="ph-howto-label">How to use this page</span>
+        <Group gap={6} mt="md">
+          <PTag color={BADGE_COLOR[m.badge]}>{cap(m.badge)}</PTag>
+          <PTag color="indigo">{m.day}</PTag>
+          <PTag color="gray">{CONF_LABEL[conf]}</PTag>
+          {ready && <PTag color="teal">✓ Interview-ready</PTag>}
+        </Group>
+        <Alert variant="light" color="cyan" mt="md" radius="md" icon={<IconInfoCircle />} title="How to use this page">
           {HOWTO}
-        </div>
+        </Alert>
       </div>
+
       {meta?.outcome && (
-        <div className="outcome-panel">
-          <span className="op-label">What you'll be able to do</span>
+        <Alert variant="light" color="teal" mb="md" radius="md" icon={<IconTargetArrow />} title="What you'll be able to do">
           By the end of this module you can {meta.outcome}
-        </div>
+        </Alert>
       )}
-      <Tabs defaultActiveKey="concept" items={tabs} />
+
+      <Tabs defaultValue="concept" keepMounted={false} variant="default">
+        <Tabs.List>
+          <Tabs.Tab value="concept" color="blue" leftSection={<IconBulb size={15} />}>Concept</Tabs.Tab>
+          <Tabs.Tab value="predict" color="grape" leftSection={<IconEye size={15} />}>Predict</Tabs.Tab>
+          <Tabs.Tab value="debug" color="orange" leftSection={<IconBug size={15} />}>Debug</Tabs.Tab>
+          <Tabs.Tab value="exercises" color="teal" leftSection={<IconStairsUp size={15} />}>Exercises</Tabs.Tab>
+          <Tabs.Tab value="pitfalls" color="red" leftSection={<IconAlertTriangle size={15} />}>Pitfalls</Tabs.Tab>
+          <Tabs.Tab value="interview" color="cyan" leftSection={<IconMicrophone size={15} />}>Interview</Tabs.Tab>
+          <Tabs.Tab value="quiz" color="yellow" leftSection={<IconChecklist size={15} />}>Quiz</Tabs.Tab>
+          <Tabs.Tab value="confidence" color="green" leftSection={<IconGauge size={15} />}>Confidence</Tabs.Tab>
+        </Tabs.List>
+
+        <Tabs.Panel value="concept" pt="lg"><ConceptTab m={m} /></Tabs.Panel>
+        <Tabs.Panel value="predict" pt="lg"><PredictTab m={m} /></Tabs.Panel>
+        <Tabs.Panel value="debug" pt="lg"><DebugTab m={m} /></Tabs.Panel>
+        <Tabs.Panel value="exercises" pt="lg"><ExercisesTab m={m} /></Tabs.Panel>
+        <Tabs.Panel value="pitfalls" pt="lg"><PitfallsTab m={m} /></Tabs.Panel>
+        <Tabs.Panel value="interview" pt="lg"><InterviewTab m={m} /></Tabs.Panel>
+        <Tabs.Panel value="quiz" pt="lg"><QuizTab m={m} /></Tabs.Panel>
+        <Tabs.Panel value="confidence" pt="lg"><ConfidenceTab m={m} /></Tabs.Panel>
+      </Tabs>
     </div>
   );
 }
 
-function TabEmpty({ children }: { children: React.ReactNode }) {
-  return <div className="empty-state">{children}</div>;
-}
-
-function reasoningItems(r: ReasoningFramework): DescriptionsProps['items'] {
+function reasoningRows(r: ReasoningFramework) {
   const fields: [string, string | undefined][] = [
     ['The question, restated', r.question],
     ['Output grain — one row per…', r.grain],
@@ -103,37 +134,37 @@ function reasoningItems(r: ReasoningFramework): DescriptionsProps['items'] {
   ];
   return fields
     .filter(([, v]) => !!v)
-    .map(([label, v], i) => ({
-      key: i,
-      label,
-      children: <span dangerouslySetInnerHTML={html(v as string)} />,
-    }));
+    .map(([label, v], i) => (
+      <Labeled key={i} label={label}>
+        <span dangerouslySetInnerHTML={html(v as string)} />
+      </Labeled>
+    ));
 }
 
 function ConceptTab({ m }: { m: Module }) {
   return (
-    <Stack gap={16}>
-      <Card size="small">
+    <Stack gap="md">
+      <Paper withBorder p="md" radius="md">
         <div className="prose" dangerouslySetInnerHTML={html(m.concept)} />
         {m.sqlPattern && (
           <>
-            <div className="section-label" style={{ margin: '14px 0 6px' }}>Core SQL pattern</div>
+            <SectionLabel mb={6}>Core SQL pattern</SectionLabel>
             <CodeBlock>{m.sqlPattern}</CodeBlock>
           </>
         )}
-      </Card>
+      </Paper>
       {m.pysupport && (
-        <Card size="small">
-          <div className="section-label" style={{ marginBottom: 6 }}>The same logic in plain Python (no pandas)</div>
+        <Paper withBorder p="md" radius="md">
+          <SectionLabel mb={6}>The same logic in plain Python (no pandas)</SectionLabel>
           <p className="page-sub" style={{ marginTop: 0 }}>If SQL feels abstract, this is the loop it compiles to in your head.</p>
           <CodeBlock>{m.pysupport}</CodeBlock>
-        </Card>
+        </Paper>
       )}
       {m.reasoning && (
-        <Card size="small">
-          <div className="section-label" style={{ marginBottom: 10 }}>Reason about the data before writing SQL</div>
-          <Descriptions column={1} size="small" bordered items={reasoningItems(m.reasoning)} />
-        </Card>
+        <Paper withBorder p="md" radius="md">
+          <SectionLabel mb={6}>Reason about the data before writing SQL</SectionLabel>
+          {reasoningRows(m.reasoning)}
+        </Paper>
       )}
     </Stack>
   );
@@ -142,14 +173,15 @@ function ConceptTab({ m }: { m: Module }) {
 function PredictTab({ m }: { m: Module }) {
   if (!m.predicts.length) return <TabEmpty>No predict drills for this module yet.</TabEmpty>;
   return (
-    <Stack gap={16}>
+    <Stack gap="md">
       <p className="page-sub" style={{ marginTop: 0 }}>
         Read the query, then pick what it returns. Predicting output is the fastest way to build real intuition for how each clause behaves.
       </p>
       {m.predicts.map((pr, i) => (
-        <Card key={i} size="small" title={m.predicts.length > 1 ? `Prediction ${i + 1} of ${m.predicts.length}` : 'Predict the output'}>
+        <Paper key={i} withBorder p="md" radius="md">
+          <SectionLabel>{m.predicts.length > 1 ? `Prediction ${i + 1} of ${m.predicts.length}` : 'Predict the output'}</SectionLabel>
           <PredictBlock predict={pr} />
-        </Card>
+        </Paper>
       ))}
     </Stack>
   );
@@ -158,14 +190,15 @@ function PredictTab({ m }: { m: Module }) {
 function DebugTab({ m }: { m: Module }) {
   if (!m.debugs.length) return <TabEmpty>No debug drills for this module yet.</TabEmpty>;
   return (
-    <Stack gap={16}>
+    <Stack gap="md">
       <p className="page-sub" style={{ marginTop: 0 }}>
         Each query looks plausible but is subtly wrong. Find the bug, say it in one sentence, then reveal the fix to check yourself.
       </p>
       {m.debugs.map((d, i) => (
-        <Card key={i} size="small" title={d.title ?? (m.debugs.length > 1 ? `Debug ${i + 1} of ${m.debugs.length}` : 'Fix the broken query')}>
+        <Paper key={i} withBorder p="md" radius="md">
+          <SectionLabel>{d.title ?? (m.debugs.length > 1 ? `Debug ${i + 1} of ${m.debugs.length}` : 'Fix the broken query')}</SectionLabel>
           <DebugBlock debug={d} />
-        </Card>
+        </Paper>
       ))}
     </Stack>
   );
@@ -173,52 +206,54 @@ function DebugTab({ m }: { m: Module }) {
 
 function ExercisesTab({ m }: { m: Module }) {
   const sorted = [...m.exercises].sort((a, b) => a.lvl - b.lvl);
-  const items: CollapseProps['items'] = sorted.map((ex) => ({
-    key: ex.id,
-    label: (
-      <span>
-        <Tag>{`L${ex.lvl}`}</Tag> {ex.title}
-      </span>
-    ),
-    children: (
-      <div>
-        <Space size={6} wrap style={{ marginBottom: 8 }}>
-          <PaletteTag color={PRIORITY_META[ex.priority].color}>{PRIORITY_META[ex.priority].label}</PaletteTag>
-        </Space>
-        <div className="prose" dangerouslySetInnerHTML={html(ex.prompt)} />
-        {ex.hints && ex.hints.length > 0 && (
-          <Collapse
-            size="small"
-            style={{ marginTop: 10 }}
-            items={[
-              {
-                key: 'hints',
-                label: '💡 Hints',
-                children: (
-                  <ul className="prose">
-                    {ex.hints.map((h, i) => (
-                      <li key={i} dangerouslySetInnerHTML={html(h)} />
-                    ))}
-                  </ul>
-                ),
-              },
-            ]}
-          />
-        )}
-        {ex.solution && (
-          <Collapse
-            size="small"
-            style={{ marginTop: 10 }}
-            items={[{ key: 'sol', label: '✅ Solution — reveal after you try', children: <CodeBlock>{ex.solution}</CodeBlock> }]}
-          />
-        )}
-      </div>
-    ),
-  }));
   return (
-    <Stack gap={12}>
+    <Stack gap="sm">
       <p className="page-sub" style={{ marginTop: 0 }}>Each level adds one new kind of difficulty. Attempt at least three to unlock completion.</p>
-      <Collapse items={items} />
+      <Accordion variant="separated" radius="md">
+        {sorted.map((ex) => (
+          <Accordion.Item key={ex.id} value={ex.id}>
+            <Accordion.Control
+              icon={
+                <Badge variant="light" color="gray" radius="sm" size="sm" styles={{ label: { textTransform: 'none' } }}>
+                  L{ex.lvl}
+                </Badge>
+              }
+            >
+              {ex.title}
+            </Accordion.Control>
+            <Accordion.Panel>
+              <Group gap={6} mb="sm">
+                <PTag color={TAG_COLOR[PRIORITY_META[ex.priority].color]}>{PRIORITY_META[ex.priority].label}</PTag>
+              </Group>
+              <div className="prose" dangerouslySetInnerHTML={html(ex.prompt)} />
+              {ex.hints && ex.hints.length > 0 && (
+                <Accordion variant="separated" radius="md" mt="sm">
+                  <Accordion.Item value="hints">
+                    <Accordion.Control icon={<IconBulb size={16} />}>Hints</Accordion.Control>
+                    <Accordion.Panel>
+                      <ul className="prose">
+                        {ex.hints.map((h, i) => (
+                          <li key={i} dangerouslySetInnerHTML={html(h)} />
+                        ))}
+                      </ul>
+                    </Accordion.Panel>
+                  </Accordion.Item>
+                </Accordion>
+              )}
+              {ex.solution && (
+                <Accordion variant="separated" radius="md" mt="sm">
+                  <Accordion.Item value="sol">
+                    <Accordion.Control icon={<IconCircleCheck size={16} />}>Solution — reveal after you try</Accordion.Control>
+                    <Accordion.Panel>
+                      <CodeBlock>{ex.solution}</CodeBlock>
+                    </Accordion.Panel>
+                  </Accordion.Item>
+                </Accordion>
+              )}
+            </Accordion.Panel>
+          </Accordion.Item>
+        ))}
+      </Accordion>
     </Stack>
   );
 }
@@ -228,26 +263,26 @@ function PitfallsTab({ m }: { m: Module }) {
   const hasEdges = !!m.edges?.length;
   if (!hasMistakes && !hasEdges) return <TabEmpty>No pitfalls recorded for this module.</TabEmpty>;
   return (
-    <Stack gap={16}>
+    <Stack gap="md">
       {hasMistakes && (
-        <Card size="small">
-          <div className="section-label" style={{ marginBottom: 8 }}>⚠ Common mistakes</div>
+        <Paper withBorder p="md" radius="md">
+          <SectionLabel>⚠ Common mistakes</SectionLabel>
           <ul className="prose">
             {m.mistakes!.map((x, i) => (
               <li key={i} dangerouslySetInnerHTML={html(x)} />
             ))}
           </ul>
-        </Card>
+        </Paper>
       )}
       {hasEdges && (
-        <Card size="small">
-          <div className="section-label" style={{ marginBottom: 8 }}>🧩 Edge cases</div>
+        <Paper withBorder p="md" radius="md">
+          <SectionLabel>🧩 Edge cases</SectionLabel>
           <ul className="prose">
             {m.edges!.map((x, i) => (
               <li key={i} dangerouslySetInnerHTML={html(x)} />
             ))}
           </ul>
-        </Card>
+        </Paper>
       )}
     </Stack>
   );
@@ -256,24 +291,22 @@ function PitfallsTab({ m }: { m: Module }) {
 function InterviewTab({ m }: { m: Module }) {
   if (!m.interview && !m.followup) return <TabEmpty>No interview script for this module yet.</TabEmpty>;
   return (
-    <Stack gap={16}>
+    <Stack gap="md">
       {m.interview && (
-        <Card size="small">
-          <div className="section-label" style={{ marginBottom: 8 }}>How to explain it in an interview</div>
+        <Paper withBorder p="md" radius="md">
+          <SectionLabel>How to explain it in an interview</SectionLabel>
           <div className="prose" dangerouslySetInnerHTML={html(m.interview)} />
-        </Card>
+        </Paper>
       )}
       {m.followup && (
-        <Collapse
-          size="small"
-          items={[
-            {
-              key: 'followup',
-              label: `Follow-up: ${m.followup.prompt}`,
-              children: <div className="prose" dangerouslySetInnerHTML={html(m.followup.answer)} />,
-            },
-          ]}
-        />
+        <Accordion variant="separated" radius="md">
+          <Accordion.Item value="followup">
+            <Accordion.Control icon={<IconMicrophone size={16} />}>Follow-up: {m.followup.prompt}</Accordion.Control>
+            <Accordion.Panel>
+              <div className="prose" dangerouslySetInnerHTML={html(m.followup.answer)} />
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
       )}
     </Stack>
   );
@@ -286,41 +319,43 @@ function QuizTab({ m }: { m: Module }) {
   const answers = ms?.quiz ?? {};
   return (
     <div>
-      <div className="section-label" style={{ marginBottom: 8 }}>
+      <SectionLabel>
         Quiz — {score.correct}/{score.total} correct ({score.answered} answered)
-      </div>
+      </SectionLabel>
       <p className="page-sub" style={{ marginTop: 0, marginBottom: 16 }}>
-        Each question maps to a rung of the L0→L5 ladder. Scoring ≥4/5 (plus an L4/L5 exercise) marks the module interview-ready.
+        Each question maps to a rung of the L0→L5 ladder. Scoring 4/5 or better (plus an L4/L5 exercise) marks the module interview-ready.
       </p>
-      <Stack gap={18}>
+      <Stack gap="lg">
         {m.quiz.map((qq, i) => {
           const chosen = answers[i];
           const answered = chosen !== undefined;
           const correct = answered && chosen === qq.answer;
           return (
             <div key={i}>
-              <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                <Tag>{`Q${i + 1} · L${qq.level}`}</Tag> <span dangerouslySetInnerHTML={html(qq.q)} />
-              </div>
-              <Radio.Group
-                value={answered ? chosen : null}
-                onChange={(e) => answerQuiz(m.id, i, e.target.value)}
-                style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-              >
-                {qq.options.map((o, oi) => (
-                  <Radio key={oi} value={oi}>
-                    {o}
-                  </Radio>
-                ))}
+              <Group gap={8} mb={8} align="center">
+                <Badge variant="light" color="gray" radius="sm" styles={{ label: { textTransform: 'none' } }}>
+                  {`Q${i + 1} · L${qq.level}`}
+                </Badge>
+                <span className="prose" style={{ fontWeight: 600 }} dangerouslySetInnerHTML={html(qq.q)} />
+              </Group>
+              <Radio.Group value={answered ? String(chosen) : ''} onChange={(v) => answerQuiz(m.id, i, Number(v))}>
+                <Stack gap="xs">
+                  {qq.options.map((o, oi) => (
+                    <Radio key={oi} value={String(oi)} label={o} />
+                  ))}
+                </Stack>
               </Radio.Group>
               {answered && (
                 <Alert
-                  style={{ marginTop: 10 }}
-                  type={correct ? 'success' : 'warning'}
-                  showIcon
-                  message={correct ? 'Correct' : 'Review this'}
-                  description={<span dangerouslySetInnerHTML={html(qq.why)} />}
-                />
+                  mt="sm"
+                  variant="light"
+                  color={correct ? 'teal' : 'yellow'}
+                  radius="md"
+                  icon={correct ? <IconCircleCheck /> : <IconCircleX />}
+                  title={correct ? 'Correct' : 'Review this'}
+                >
+                  <span dangerouslySetInnerHTML={html(qq.why)} />
+                </Alert>
               )}
             </div>
           );
@@ -335,24 +370,21 @@ function ConfidenceTab({ m }: { m: Module }) {
   const ms = state.modules[m.id];
   const ready = moduleReady(m, ms);
   return (
-    <Stack gap={18}>
-      <Card size="small">
-        <div className="section-label" style={{ marginBottom: 10 }}>How confident are you on this topic right now?</div>
-        <Rate value={ms?.confidence ?? 0} onChange={(n) => setConfidence(m.id, n)} />
-      </Card>
-      <Space wrap>
-        <Button type={ms?.complete ? 'primary' : 'default'} onClick={() => setModuleComplete(m.id, !ms?.complete)}>
+    <Stack gap="lg">
+      <Paper withBorder p="md" radius="md">
+        <SectionLabel mb={10}>How confident are you on this topic right now?</SectionLabel>
+        <Rating value={ms?.confidence ?? 0} onChange={(n) => setConfidence(m.id, n)} count={5} size="lg" color="yellow" />
+      </Paper>
+      <Group>
+        <Button variant={ms?.complete ? 'primary' : 'default'} onClick={() => setModuleComplete(m.id, !ms?.complete)}>
           {ms?.complete ? '✓ Marked complete' : 'Mark module complete'}
         </Button>
         <Button onClick={() => setRoute('gym')}>Practice this in the Gym →</Button>
-      </Space>
+      </Group>
       {!ready && (
-        <Alert
-          type="warning"
-          showIcon
-          message="Interview-ready gate"
-          description="Answer all 5 quiz questions (≥4 correct) and mark the module complete to make it interview-ready and lift your readiness score."
-        />
+        <Alert variant="light" color="yellow" radius="md" icon={<IconAlertTriangle />} title="Interview-ready gate">
+          Answer all 5 quiz questions (≥4 correct) and mark the module complete to make it interview-ready and lift your readiness score.
+        </Alert>
       )}
     </Stack>
   );
@@ -363,50 +395,51 @@ function PredictBlock({ predict }: { predict: Predict }) {
   const correct = picked !== null && picked === predict.answer;
   return (
     <div>
-      <p style={{ marginTop: 0 }} dangerouslySetInnerHTML={html(predict.prompt)} />
+      <p className="prose" style={{ marginTop: 0 }} dangerouslySetInnerHTML={html(predict.prompt)} />
       {predict.query && <CodeBlock>{predict.query}</CodeBlock>}
-      <Radio.Group
-        value={picked}
-        onChange={(e) => setPicked(e.target.value)}
-        style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '10px 0' }}
-      >
-        {predict.options.map((o, i) => (
-          <Radio key={i} value={i}>
-            {o}
-          </Radio>
-        ))}
+      <Radio.Group value={picked === null ? '' : String(picked)} onChange={(v) => setPicked(Number(v))}>
+        <Stack gap="xs" mt="sm">
+          {predict.options.map((o, i) => (
+            <Radio key={i} value={String(i)} label={o} />
+          ))}
+        </Stack>
       </Radio.Group>
       {picked !== null && (
         <Alert
-          type={correct ? 'success' : 'warning'}
-          showIcon
-          message={correct ? 'Correct' : 'Not quite'}
-          description={<span dangerouslySetInnerHTML={html(predict.explain)} />}
-        />
+          mt="md"
+          variant="light"
+          color={correct ? 'teal' : 'yellow'}
+          radius="md"
+          icon={correct ? <IconCircleCheck /> : <IconCircleX />}
+          title={correct ? 'Correct' : 'Not quite'}
+        >
+          <span dangerouslySetInnerHTML={html(predict.explain)} />
+        </Alert>
       )}
     </div>
   );
 }
 
 function DebugBlock({ debug }: { debug: Debug }) {
-  const items: CollapseProps['items'] = [
-    { key: 'hint', label: '💡 Hint', children: <span dangerouslySetInnerHTML={html(debug.hint)} /> },
-    {
-      key: 'fix',
-      label: '✅ Fixed query & why',
-      children: (
-        <>
-          <CodeBlock>{debug.fixed}</CodeBlock>
-          <p className="prose" style={{ marginTop: 8 }} dangerouslySetInnerHTML={html(debug.why)} />
-        </>
-      ),
-    },
-  ];
   return (
     <div>
-      <p style={{ marginTop: 0 }} dangerouslySetInnerHTML={html(debug.prompt)} />
+      <p className="prose" style={{ marginTop: 0 }} dangerouslySetInnerHTML={html(debug.prompt)} />
       <CodeBlock>{debug.broken}</CodeBlock>
-      <Collapse size="small" style={{ marginTop: 10 }} items={items} />
+      <Accordion variant="separated" radius="md" mt="sm">
+        <Accordion.Item value="hint">
+          <Accordion.Control icon={<IconBulb size={16} />}>Hint</Accordion.Control>
+          <Accordion.Panel>
+            <span className="prose" dangerouslySetInnerHTML={html(debug.hint)} />
+          </Accordion.Panel>
+        </Accordion.Item>
+        <Accordion.Item value="fix">
+          <Accordion.Control icon={<IconCircleCheck size={16} />}>Fixed query & why</Accordion.Control>
+          <Accordion.Panel>
+            <CodeBlock>{debug.fixed}</CodeBlock>
+            <p className="prose" style={{ marginTop: 8 }} dangerouslySetInnerHTML={html(debug.why)} />
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
     </div>
   );
 }

@@ -1,11 +1,14 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent, within } from '@testing-library/react';
 import App from '@/App';
 import { __resetForTests } from '@/state/progressStore';
 
 beforeEach(() => __resetForTests());
 afterEach(cleanup);
+
+/** The sidebar is the page's only navigation landmark; scope nav clicks to it. */
+const nav = () => within(screen.getByRole('navigation'));
 
 describe('app renders core flows', () => {
   it('renders the dashboard with blended readiness and category coverage', () => {
@@ -16,33 +19,30 @@ describe('app renders core flows', () => {
 
   it('renders the sample module (concept + quiz) from the learning-path rail', () => {
     render(<App />);
-    // Modules live in the sidebar now; open M0 directly.
-    fireEvent.click(screen.getByRole('menuitem', { name: /SQL Mental Model/ }));
-    // The hero heading carries the module title (also appears in the rail + breadcrumb,
-    // so scope the assertion to the heading role).
+    fireEvent.click(nav().getByText('SQL Mental Model from First Principles'));
+    // The hero heading carries the module title (also in the rail + breadcrumb, so
+    // assert on the heading role specifically).
     expect(screen.getByRole('heading', { name: 'SQL Mental Model from First Principles' })).toBeTruthy();
-    // The quiz now lives in its own tab — switch to it, then assert.
     fireEvent.click(screen.getByRole('tab', { name: 'Quiz' }));
     expect(screen.getByText(/Quiz —/)).toBeTruthy();
   });
 
   it('opens the sample problem in Focus Mode from the gym', () => {
     render(<App />);
-    fireEvent.click(screen.getByRole('menuitem', { name: /Practice Gym/ }));
+    fireEvent.click(nav().getByText('Practice Gym'));
     fireEvent.click(screen.getByRole('button', { name: /Start ladder/ }));
-    // focus-title shows the first rung of the conditional ladder
     expect(screen.getByText('Recognize the 0/1 success flag')).toBeTruthy();
     expect(screen.getByText(/What you need to do/)).toBeTruthy();
   });
 
   it('renders the Data-Reasoning, Mock, and Panic pages', () => {
     render(<App />);
-    fireEvent.click(screen.getByRole('menuitem', { name: /Data reasoning/ }));
+    fireEvent.click(nav().getByText(/Data reasoning/));
     expect(screen.getByText(/16 patterns/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('menuitem', { name: /Mock interviews/ }));
+    fireEvent.click(nav().getByText('Mock interviews'));
     expect(screen.getByText(/How to run this like a real interview/)).toBeTruthy();
     expect(screen.getByText(/Component 1/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('menuitem', { name: /Panic sheet/ }));
+    fireEvent.click(nav().getByText('Panic sheet'));
     expect(screen.getByText('The 7-step loop (say it out loud)')).toBeTruthy();
   });
 });

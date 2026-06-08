@@ -1,7 +1,9 @@
-export function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+import { Paper } from '@mantine/core';
+
+export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`card ${className}`}>
-      <div className="card-body">{children}</div>
-    </div>
+    <Paper withBorder radius="lg" p="lg" className={className ? `app-card ${className}` : 'app-card'}>
+      {children}
+    </Paper>
   );
 }

@@ -1,9 +1,11 @@
+import { MantineProvider } from '@mantine/core';
 import { MODULES } from '@/data/modules';
 import { PROBLEMS } from '@/data/gym';
 import { MOCKS } from '@/data/mock';
 import { RUBRICS } from '@/data/rubrics';
 import { useProgress } from '@/state/progressStore';
 import { blendedReadiness } from '@/utils/scoring';
+import { theme } from '@/theme/mantineTheme';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { Resources } from '@/components/dashboard/Resources';
@@ -21,15 +23,17 @@ export default function App() {
   const score = blendedReadiness(state, MODULES, PROBLEMS, MOCKS[0], rubricsById).overall;
 
   return (
-    <AppLayout route={state.route} readiness={score}>
-      {state.route === 'dashboard' && <Dashboard />}
-      {state.route === 'learn' && <ModuleView />}
-      {state.route === 'gym' && <GymView />}
-      {state.route === 'schema' && <SchemaExplorer />}
-      {state.route === 'resources' && <Resources />}
-      {state.route === 'reason' && <ReasoningView />}
-      {state.route === 'mock' && <MockView />}
-      {state.route === 'panic' && <PanicSheet />}
-    </AppLayout>
+    <MantineProvider theme={theme} forceColorScheme="dark">
+      <AppLayout route={state.route} readiness={score}>
+        {state.route === 'dashboard' && <Dashboard />}
+        {state.route === 'learn' && <ModuleView />}
+        {state.route === 'gym' && <GymView />}
+        {state.route === 'schema' && <SchemaExplorer />}
+        {state.route === 'resources' && <Resources />}
+        {state.route === 'reason' && <ReasoningView />}
+        {state.route === 'mock' && <MockView />}
+        {state.route === 'panic' && <PanicSheet />}
+      </AppLayout>
+    </MantineProvider>
   );
 }

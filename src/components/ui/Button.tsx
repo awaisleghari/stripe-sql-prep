@@ -1,12 +1,30 @@
+import { Button as MButton } from '@mantine/core';
+
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'default';
   small?: boolean;
 }
-export function Button({ variant = 'default', small, className = '', children, ...rest }: Props) {
-  const cls = ['btn', variant === 'primary' ? 'primary' : '', small ? 'sm' : '', className].filter(Boolean).join(' ');
+
+/** App button. `primary` renders a gradient CTA; `default` is a bordered button. */
+export function Button({ variant = 'default', small, className, children, ...rest }: Props) {
+  const size = small ? 'xs' : 'sm';
+  if (variant === 'primary') {
+    return (
+      <MButton
+        variant="gradient"
+        gradient={{ from: 'brand', to: 'grape', deg: 135 }}
+        size={size}
+        radius="md"
+        className={className}
+        {...rest}
+      >
+        {children}
+      </MButton>
+    );
+  }
   return (
-    <button className={cls} {...rest}>
+    <MButton variant="default" size={size} radius="md" className={className} {...rest}>
       {children}
-    </button>
+    </MButton>
   );
 }

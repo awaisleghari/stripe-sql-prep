@@ -8,15 +8,14 @@ test('dashboard loads and shows readiness', async ({ page }) => {
 
 test('can open the Practice Gym and reach Focus Mode', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('menuitem', { name: /Practice Gym/ }).click();
+  await page.getByRole('navigation').getByText('Practice Gym').click();
   await page.getByRole('button', { name: /Start ladder/ }).click();
   await expect(page.locator('.focus-title')).toBeVisible();
 });
 
 test('sample module renders its concept and quiz', async ({ page }) => {
   await page.goto('/');
-  // Modules live in the sidebar rail; open M0 directly.
-  await page.getByRole('menuitem', { name: /SQL Mental Model/ }).click();
+  await page.getByRole('navigation').getByText('SQL Mental Model from First Principles').click();
   // Concept is the default tab.
   await expect(page.getByText(/A database is a set of tables/)).toBeVisible();
   // The quiz now lives in its own tab.

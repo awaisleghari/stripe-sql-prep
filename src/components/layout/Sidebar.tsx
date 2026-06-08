@@ -1,21 +1,33 @@
-import { Layout, Menu } from 'antd';
-import type { MenuProps } from 'antd';
+import { NavLink, Text, Box } from '@mantine/core';
 import {
-  AppstoreOutlined,
-  ThunderboltOutlined,
-  BranchesOutlined,
-  AimOutlined,
-  DatabaseOutlined,
-  AlertOutlined,
-  LinkOutlined,
-} from '@ant-design/icons';
+  IconLayoutDashboard,
+  IconBarbell,
+  IconRoute,
+  IconTargetArrow,
+  IconDatabase,
+  IconLifebuoy,
+  IconLink,
+} from '@tabler/icons-react';
 import type { Route, Module } from '@/types';
 import { MODULES } from '@/data/modules';
 import { useProgress, setRoute, openModule } from '@/state/progressStore';
 
-const { Sider } = Layout;
+const ICON = { size: 18, stroke: 1.7 };
 
-/** Theme name shown beside each day in the Learning Path rail. */
+type RouteItem = { route: Route; label: string; icon: React.ReactNode };
+
+const OVERVIEW: RouteItem[] = [{ route: 'dashboard', label: 'Dashboard', icon: <IconLayoutDashboard {...ICON} /> }];
+const PRACTICE: RouteItem[] = [
+  { route: 'gym', label: 'Practice Gym', icon: <IconBarbell {...ICON} /> },
+  { route: 'reason', label: 'Data reasoning → SQL', icon: <IconRoute {...ICON} /> },
+  { route: 'mock', label: 'Mock interviews', icon: <IconTargetArrow {...ICON} /> },
+];
+const REFERENCE: RouteItem[] = [
+  { route: 'schema', label: 'Schema explorer', icon: <IconDatabase {...ICON} /> },
+  { route: 'panic', label: 'Panic sheet', icon: <IconLifebuoy {...ICON} /> },
+  { route: 'resources', label: 'Resources', icon: <IconLink {...ICON} /> },
+];
+
 const DAY_THEME: Record<string, string> = {
   'Day 1': 'Foundations',
   'Day 2': 'Logic & Joins',
@@ -24,17 +36,7 @@ const DAY_THEME: Record<string, string> = {
   'Day 5': 'Stripe Metrics',
 };
 
-function moduleLabel(id: string, title: string) {
-  return (
-    <span className="navmod">
-      <span className="navmod-id">{id.toUpperCase()}</span>
-      <span className="navmod-title">{title}</span>
-    </span>
-  );
-}
-
-/** Group modules under their day, preserving MODULES order. */
-function dayGroups(): MenuProps['items'] {
+function dayGroups(): { day: string; label: string; mods: Module[] }[] {
   const order: string[] = [];
   const byDay: Record<string, Module[]> = {};
   for (const m of MODULES) {
@@ -44,60 +46,17 @@ function dayGroups(): MenuProps['items'] {
     }
     byDay[m.day].push(m);
   }
-  return order.map((day) => ({
-    key: `grp-${day}`,
-    type: 'group',
-    label: DAY_THEME[day] ? `${day} · ${DAY_THEME[day]}` : day,
-    children: byDay[day].map((m) => ({ key: m.id, label: moduleLabel(m.id, m.title) })),
-  }));
+  return order.map((day) => ({ day, label: DAY_THEME[day] ? `${day} · ${DAY_THEME[day]}` : day, mods: byDay[day] }));
 }
 
-const MODULE_IDS = new Set<string>(MODULES.map((m) => m.id));
-
-const ITEMS: MenuProps['items'] = [
-  {
-    key: 'g-overview',
-    type: 'group',
-    label: 'Overview',
-    children: [{ key: 'dashboard', icon: <AppstoreOutlined />, label: 'Dashboard' }],
-  },
-  ...(dayGroups() ?? []),
-  {
-    key: 'g-practice',
-    type: 'group',
-    label: 'Practice',
-    children: [
-      { key: 'gym', icon: <ThunderboltOutlined />, label: 'Practice Gym' },
-      { key: 'reason', icon: <BranchesOutlined />, label: 'Data reasoning → SQL' },
-      { key: 'mock', icon: <AimOutlined />, label: 'Mock interviews' },
-    ],
-  },
-  {
-    key: 'g-reference',
-    type: 'group',
-    label: 'Reference',
-    children: [
-      { key: 'schema', icon: <DatabaseOutlined />, label: 'Schema explorer' },
-      { key: 'panic', icon: <AlertOutlined />, label: 'Panic sheet' },
-      { key: 'resources', icon: <LinkOutlined />, label: 'Resources' },
-    ],
-  },
-];
+const GROUPS = dayGroups();
 
 export function Sidebar() {
   const state = useProgress();
   const selected = state.route === 'learn' ? state.activeModuleId ?? MODULES[0].id : state.route;
+
   return (
-    <Sider
-      width={252}
-      style={{
-        position: 'sticky',
-        top: 0,
-        height: '100vh',
-        overflow: 'auto',
-        borderInlineEnd: '1px solid var(--split)',
-      }}
-    >
+    <aside className="app-sider">
       <div className="brand-block">
         <div className="brand-mark">S</div>
         <div>
@@ -105,13 +64,57 @@ export function Sidebar() {
           <div className="brand-sub">Blended technical gym</div>
         </div>
       </div>
-      <Menu
-        mode="inline"
-        selectedKeys={[selected]}
-        items={ITEMS}
-        onClick={({ key }) => (MODULE_IDS.has(key) ? openModule(key) : setRoute(key as Route))}
-        style={{ borderInlineEnd: 0, background: 'transparent' }}
-      />
-    </Sider>
+
+      <Box component="nav" className="app-nav" aria-label="Primary">
+        <Text className="nav-group">Overview</Text>
+        {OVERVIEW.map((it) => (
+          <NavLink
+            key={it.route}
+            active={selected === it.route}
+            label={it.label}
+            leftSection={it.icon}
+            onClick={() => setRoute(it.route)}
+          />
+        ))}
+
+        {GROUPS.map((g) => (
+          <div key={g.day}>
+            <Text className="nav-group">{g.label}</Text>
+            {g.mods.map((m) => (
+              <NavLink
+                key={m.id}
+                active={selected === m.id}
+                label={m.title}
+                leftSection={<span className="navmod-id">{m.id.toUpperCase()}</span>}
+                onClick={() => openModule(m.id)}
+                styles={{ label: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }}
+              />
+            ))}
+          </div>
+        ))}
+
+        <Text className="nav-group">Practice</Text>
+        {PRACTICE.map((it) => (
+          <NavLink
+            key={it.route}
+            active={selected === it.route}
+            label={it.label}
+            leftSection={it.icon}
+            onClick={() => setRoute(it.route)}
+          />
+        ))}
+
+        <Text className="nav-group">Reference</Text>
+        {REFERENCE.map((it) => (
+          <NavLink
+            key={it.route}
+            active={selected === it.route}
+            label={it.label}
+            leftSection={it.icon}
+            onClick={() => setRoute(it.route)}
+          />
+        ))}
+      </Box>
+    </aside>
   );
 }
