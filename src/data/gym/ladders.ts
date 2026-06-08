@@ -111,6 +111,24 @@ export const LADDERS: Ladder[] = [
     ]
   },
   {
+    "id": "ret",
+    "title": "Retention & Cohort",
+    "category": "sql",
+    "module": "m10",
+    "concept": "retention",
+    "blurb": "Fix the cohort anchor, count distinct entities per offset, and exclude immature cohorts.",
+    "problemIds": [
+      "rt1",
+      "rt2",
+      "rt3",
+      "rt4",
+      "rt5",
+      "rt6",
+      "rt7",
+      "rt8"
+    ]
+  },
+  {
     "id": "rev",
     "title": "Revenue / Ledger",
     "category": "sql",
@@ -144,6 +162,24 @@ export const LADDERS: Ladder[] = [
       "rf6",
       "rf7",
       "rf8"
+    ]
+  },
+  {
+    "id": "rec",
+    "title": "Failed-Payment Recovery",
+    "category": "sql",
+    "module": "m13",
+    "concept": "recovery",
+    "blurb": "The unit is the failure: a later success within the window, counted once; clean denominators.",
+    "problemIds": [
+      "rc1",
+      "rc2",
+      "rc3",
+      "rc4",
+      "rc5",
+      "rc6",
+      "rc7",
+      "rc8"
     ]
   },
   {

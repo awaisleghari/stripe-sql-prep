@@ -46,9 +46,17 @@ export const MODULE_META: Record<ModuleId, { why: string; outcome: string }> = {
     why: 'Conversion questions — checkout, onboarding, trial-to-paid — are funnels where the denominator changes per step and counting events instead of entities inflates everything.',
     outcome: 'build distinct-entity funnels, name the denominator for each conversion rate, and apply a conversion window.',
   },
+  m10: {
+    why: 'Growth and churn questions are cohort questions: hold the signup fixed and watch the group over time — easy to corrupt with cohort leakage or immature recent cohorts.',
+    outcome: 'fix the cohort anchor, count distinct entities per offset, build a retention curve, and exclude immature cohorts.',
+  },
   m11: {
     why: 'Gross volume is not net revenue. Finance reports what merchants actually keep, which lives in the ledger.',
     outcome: 'separate GPV, net (ledger) and MRR, handle multi-currency, and reconcile the pieces.',
+  },
+  m13: {
+    why: 'A failed charge is not always lost revenue — a later retry can recover it — but the rate is easy to corrupt by counting successes or ignoring direction and the recovery window.',
+    outcome: 'compute recovery rate with the failure as the unit, a directional/windowed match, and clean denominator discipline.',
   },
   m12: {
     why: 'Refund and dispute rates are watched by card networks; the denominator and late-arriving timing are exactly where answers go wrong.',

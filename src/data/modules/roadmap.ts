@@ -49,10 +49,10 @@ export const MODULE_ROADMAP: RoadmapDay[] = [
     day: 'Day 5',
     theme: 'Stripe Metrics',
     slots: [
-      { id: 'm10', locked: true, lockedTitle: 'Retention & Cohort Analysis' },
+      { id: 'm10', locked: false },
       { id: 'm11', locked: false },
       { id: 'm12', locked: false },
-      { id: 'm13', locked: true, lockedTitle: 'Failed-Payment Recovery' },
+      { id: 'm13', locked: false },
     ],
   },
   {

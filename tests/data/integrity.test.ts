@@ -67,10 +67,12 @@ describe('CTEs & Subqueries (m5 + cte ladder)', () => {
   });
 });
 
-describe('Date/Time Logic + Funnel Analysis (m7/dt, m9/fun)', () => {
+describe('Newly built SQL modules + ladders', () => {
   const pairs = [
     { mid: 'm7', title: 'Date / Time Logic', lid: 'dt' },
     { mid: 'm9', title: 'Funnel Analysis', lid: 'fun' },
+    { mid: 'm10', title: 'Retention & Cohort Analysis', lid: 'ret' },
+    { mid: 'm13', title: 'Failed-Payment Recovery', lid: 'rec' },
   ];
   for (const { mid, title, lid } of pairs) {
     it(`${mid} module exists ("${title}") with a 5-question quiz + drills`, () => {
@@ -101,9 +103,9 @@ describe('Date/Time Logic + Funnel Analysis (m7/dt, m9/fun)', () => {
 });
 
 describe('migrated dataset size', () => {
-  it('has all 92 problems and 12 ladders', () => {
-    expect(PROBLEMS.length).toBe(92);
-    expect(LADDERS.length).toBe(12);
+  it('has all 108 problems and 14 ladders', () => {
+    expect(PROBLEMS.length).toBe(108);
+    expect(LADDERS.length).toBe(14);
   });
   it('every ladder problem-count matches its problemIds', () => {
     const byLadder: Record<string, number> = {};
@@ -170,8 +172,8 @@ describe('module data integrity', () => {
     }
   });
 
-  it('has all 12 migrated modules, each with concept, predicts, debugs and exercises', () => {
-    expect(MODULES.length).toBe(12);
+  it('has all 14 migrated modules, each with concept, predicts, debugs and exercises', () => {
+    expect(MODULES.length).toBe(14);
     for (const m of MODULES) {
       expect(m.concept, `concept for ${m.id}`).toBeTruthy();
       expect(m.predicts.length, `predicts for ${m.id}`).toBeGreaterThanOrEqual(1);
