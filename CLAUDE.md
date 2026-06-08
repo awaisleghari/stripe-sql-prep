@@ -1,484 +1,289 @@
-# CLAUDE.md
+# CLAUDE.md — Stripe Interview Prep Repo
 
-## Project mission
+## 0. What this project is
 
-This repository is a **Stripe-style technical interview training gym** for a PhD/Data Science/MLE candidate who is learning SQL and preparing for a high-pressure technical interview.
+This repository is a modular Vite + React + TypeScript rewrite of the original single-file Stripe SQL Prep app.
 
-The product is not merely a SQL tutorial. It is a blended learning system for:
+The product is a browser-only, static, blended technical-interview prep system for a Stripe PhD / Data Science / MLE-style interview. It trains SQL, data problem decomposition, Python production-style scripting, product analytics, experimentation/causal reasoning, MLE/statistics, Stripe object literacy, interview communication, validation, and edge-case discipline.
 
-1. SQL execution and analytics reasoning.
-2. Data problem decomposition.
-3. Python production-style scripting without assuming pandas.
-4. Product analytics reasoning.
-5. Experimentation and causal inference.
-6. MLE/statistics intuition.
-7. Stripe object literacy.
-8. Interview communication under ambiguity.
+The candidate is analytically strong and decent with Python, but is learning SQL and should not be assumed to know pandas. Teach SQL and data reasoning from first principles.
 
-The candidate is decent with Python and analytically strong, but does **not** have strong pandas fluency. Teach SQL and data reasoning from first principles. Python can be used as support through lists, dictionaries, loops, functions, sorting, sets, tests, and validation. Do not assume pandas.
+Deployment target: Cloudflare Pages as a static Vite build.
 
-The long-term goal is a polished, browser-only learning cockpit deployable to Cloudflare Pages. All progress and code execution must remain client-side. No backend, no database server, no secrets, no authentication, and no server-side code execution.
+Runtime constraints:
 
----
+- No backend.
+- No database.
+- No authentication.
+- No server-side code execution.
+- No remote grading.
+- Progress is stored in `localStorage`.
+- Future SQL/code checking must run entirely in the browser.
 
-## Current architecture
+## 1. Current migration status
 
-This is a Vite + React + TypeScript app.
+The staged migration from the original monolithic HTML app is complete through Repo-7.
 
-Important commands:
+Completed:
 
-```bash
-npm install
-npm run dev
-npm run typecheck
-npm run test
-npm run build
-npm run test:e2e
-```
+- Repo-1: Vite/React/TypeScript scaffold, base types, localStorage store, sample module/problem, tests, Cloudflare path.
+- Repo-2: full schema, merchant cast, resources, rubrics, and all 68 Practice Gym problems migrated into typed per-category data files.
+- Repo-3: all 9 SQL learning modules migrated with full pedagogy: concept, reasoning framework, Predict, Debug, exercises, 5-question quiz, mistakes/edges, interview script, confidence and completion gates.
+- Repo-4: standalone pages and Practice Gym parity: Guided Path, Focus Mode, Browse All, Review Queue, problem status persistence, filters, navigation, resources, mock, panic sheet, data reasoning page.
+- Repo-5: dashboard upgrade with blended readiness, category coverage, weak-area coaching, and routing into Practice Gym.
+- Repo-6: Cloudflare deployment finalization, Node pinning, asset headers, GitHub Actions CI, deploy checklist, and README deployment guidance.
+- Repo-7: UI rebuilt on **Mantine v7** (`@mantine/core`, `@mantine/hooks`, `@tabler/icons-react`). Custom dark theme in `src/theme/mantineTheme.ts` (periwinkle brand, brighter-contrast navy palette, 15px base font). App shell (sidebar rail with day-grouped modules, breadcrumb + readiness ring), learning modules (color-coded Mantine `Tabs`, `Accordion`, `Radio`, `Rating`, `Alert`), and the shared `ui/` primitives (`Button`/`Card`/`Tag`/`Callout`/`ProgressBar`) all render through Mantine. SQL `CodeBlock` keeps a local dependency-free syntax highlighter. An earlier interim build on Ant Design was fully removed in this step.
 
-The app must always build as a static site:
+Treat the current repo as the source of truth. Do not redo completed migration chunks unless explicitly instructed.
 
-```bash
-npm run build
-```
+## 2. Product philosophy
 
-Cloudflare Pages target:
+This is not a generic SQL tutorial and not a bootcamp worksheet.
 
-- Build command: `npm run build`
-- Output directory: `dist`
-- No backend required
-- No environment variables required for the first version
+It is a closed, rigorous interview gym. The learner should not have to leave the app to do serious practice. External resources are inspiration and backup; internal modules and Practice Gym problems are the primary training surface.
 
----
+Every learning surface should answer:
 
-## Non-negotiable engineering principles
+- What am I doing here?
+- Why does this matter for Stripe?
+- What should I do next?
+- What does a good answer look like?
+- How do I know if I got it right?
+- What should I review if I am weak?
+- How does this prepare me for the interview?
 
-### 1. Make everything easy to debug
+The app should make the learner feel:
 
-Every domain must have an obvious home.
+- oriented,
+- calm,
+- guided,
+- challenged,
+- confident,
+- not overwhelmed.
 
-- Problems live in `src/data/gym/...`.
-- Learning modules live in `src/data/modules/...`.
-- Ladders live in `src/data/gym/ladders.ts`.
-- Schema/cast/resources/rubrics live in `src/data/...`.
-- Type definitions live in `src/types/...`.
-- localStorage logic lives only in `src/state/progressStore.ts` and related state utilities.
-- Filtering, scoring, navigation, and validation logic live in `src/utils/...`.
-- UI components live in `src/components/...`.
-- Styling tokens live in `src/styles/tokens.css`.
+The core reasoning loop is:
 
-Do not create junk drawers. Do not create giant files that mix data, UI, and state. Do not hide important logic inside React components if it belongs in a selector, utility, or typed data model.
-
-### 2. Type the data strictly
-
-Every module, problem, ladder, quiz, resource, rubric, and progress object must have a TypeScript type.
-
-Avoid stringly typed behavior where a union type would be safer.
-
-Examples of values that should be typed as unions:
-
-- Problem difficulty
-- Problem mode
-- Problem status
-- Priority
-- Ladder id
-- Module id
-- Quiz ladder level
-- Resource category
-- Tag color
-
-Do not add new categories or string values without updating the corresponding types, labels, tests, and filters.
-
-### 3. Preserve state safety
-
-Progress is localStorage-backed. localStorage should be handled through the state layer, not scattered across components.
-
-When changing progress shape:
-
-- Use versioned keys where appropriate.
-- Add migration logic when necessary.
-- Never silently destroy user progress.
-- Write tests for selectors and state updates.
-- Treat malformed localStorage as recoverable.
-
-### 4. Browser-only code execution
-
-All code execution and answer checking must happen in the browser.
-
-No backend execution.
-No remote code execution.
-No server-side grading.
-No API calls for grading.
-No hidden network dependency.
-
-Future SQL checking should use a browser-local engine such as `sql.js` or DuckDB-Wasm. Start with SQL execution only. Python execution is harder and should not be added until the architecture can sandbox it safely. Python drills can initially use model answers, static checks, and test-case prompts.
-
-When adding SQL execution:
-
-- Put SQL engine code under a dedicated `src/sqlRunner/` area.
-- Seed datasets must be deterministic and versioned.
-- Result comparison must be explicit.
-- Feedback rules must be testable.
-- Problems should declare whether they are executable.
-- Non-executable reasoning problems should continue using model answers and rubrics.
-
-Suggested future structure:
-
-```text
-src/sqlRunner/
-  engine.ts
-  seedDatabase.ts
-  datasets/
-  normalizeResults.ts
-  compareResults.ts
-  feedback.ts
-  executableProblemTypes.ts
-```
-
-### 5. Tests are part of the product, not an afterthought
-
-Any meaningful change should be accompanied by appropriate tests.
-
-Minimum expected validation:
-
-```bash
-npm run typecheck
-npm run test
-npm run build
-```
-
-Run Playwright when UI routes, navigation, or interaction flows change:
-
-```bash
-npm run test:e2e
-```
-
-If a change cannot be tested automatically yet, explicitly say what was manually inspected and why a test was not added.
-
----
-
-## Product principles
-
-### 1. The app must be problem-forward
-
-The learner should always understand:
-
-1. What am I doing right now?
-2. Why does it matter for the interview?
-3. What should I produce?
-4. How do I check whether I got it right?
-5. What should I do next?
-
-Avoid catalog dumps. The Practice Gym should default to a focused one-problem-at-a-time runner, not an overwhelming grid.
-
-A browse/catalog mode is useful, but it is secondary. The primary experience should be:
-
-- pick a ladder;
-- start or continue;
-- focus on one problem;
-- attempt;
-- reveal hints only when needed;
-- compare solution;
-- mark status;
-- move to next problem.
-
-### 2. Learning must be confidence-building and layered
-
-Do not create random bags of questions. Every ladder should progress deliberately:
-
-1. Recognition / concept intuition.
-2. Easy mechanical practice.
-3. Medium applied problem.
-4. Hard multi-step problem.
-5. Edge-case hard problem.
-6. Debug or explain-aloud task.
-7. Timed final-boss challenge.
-
-Every problem should clearly state:
-
-- what this problem teaches;
-- why it is harder than the previous problem;
-- prerequisite skill;
-- next recommended problem.
-
-### 3. Teach from first principles, not pandas
-
-The candidate is not a strong pandas user. Do not write learning content that assumes pandas fluency.
-
-Use this reasoning loop:
-
-1. What question are we answering?
+1. What is the question?
 2. What is the input?
 3. What is the output?
-4. What is one row/result?
+4. What is one row / one result?
 5. What rows count?
 6. What rows do not count?
 7. What is the metric?
-8. What is the denominator?
-9. What edge cases can break the answer?
-10. How do we validate?
+8. What denominator matters?
+9. What table/object is the source of truth?
+10. What edge cases could break the answer?
+11. How do we validate the result?
+12. How would we explain this in an interview?
 
-Python support should use simple language and simple data structures. Avoid advanced pandas vocabulary unless clearly labeled as optional and not required.
+## 3. Candidate profile assumptions
 
-### 4. Stripe realism matters
+Do not assume pandas fluency.
 
-Keep problems Stripe-flavoured and realistic. Use the synthetic schema and recurring merchant cast consistently.
+The candidate is:
 
-Core objects and concepts:
+- analytically strong,
+- decent with Python,
+- learning SQL,
+- likely comfortable with research/statistical reasoning,
+- preparing under time pressure.
 
-- merchants
-- customers
-- charges
-- refunds
-- disputes
-- subscriptions
-- invoices
-- balance transactions
-- payouts
-- connected accounts
-- PaymentIntent vs Charge
-- Refund vs Dispute
-- Balance Transaction as ledger
-- platform vs connected-account grain
+Use simple Python support where useful:
 
-Frequent edge cases:
+- lists,
+- dictionaries,
+- loops,
+- sorting,
+- sets,
+- functions,
+- simple tests,
+- validation.
 
-- pending charges
-- failed charges
-- duplicate/idempotency events
-- refund vs dispute distinction
-- late-arriving disputes
-- created_at vs available_on
-- multi-currency
-- integer division
-- one-to-many join fan-out
-- nulls
-- low-volume merchants
-- selection bias
-- time-window ambiguity
-- causality vs correlation
+Avoid teaching through advanced pandas assumptions such as:
 
-### 5. The app should train interview communication
+- `groupby().transform`,
+- `pivot_table`,
+- complex dataframe merges,
+- dataframe rolling windows,
+- advanced reshaping.
 
-Every substantial problem should include an explain-aloud component. The candidate should practice saying:
+Acceptable pandas language is limited to “no pandas required” or “pandas not assumed.”
 
-- “Let me clarify the metric.”
-- “The output grain is…”
-- “The denominator should be…”
-- “The relevant source table is…”
-- “The edge cases are…”
-- “I would validate this by…”
-- “I would not claim causality because…”
+## 4. Actual repository architecture
 
----
+Keep the architecture modular. Every concept should have an obvious home.
 
-## UI / UX standards
+Current structure:
 
-The UI should feel like a premium, calm, focused learning cockpit.
+```text
+src/
+  App.tsx
+  main.tsx
 
-Design inspiration:
+  components/
+    dashboard/
+      Dashboard.tsx
+      Resources.tsx
+    gym/
+      BrowseAll.tsx
+      FocusMode.tsx
+      GuidedPath.tsx
+      GymView.tsx
+      ProblemDetail.tsx
+      ReviewQueue.tsx
+    layout/
+      AppLayout.tsx
+      Sidebar.tsx
+      Topbar.tsx
+    learning/
+      ModuleView.tsx
+    pages/
+      MockView.tsx
+      PanicSheet.tsx
+      ReasoningView.tsx
+    schema/
+      SchemaExplorer.tsx
+    ui/
+      Button.tsx
+      Callout.tsx
+      Card.tsx
+      CodeBlock.tsx
+      Collapse.tsx
+      Labeled.tsx
+      ProgressBar.tsx
+      Tag.tsx
 
-- Ant Design for structure, navigation, tables, tags, steps, progress, collapses, and status indicators.
-- shadcn/ui for restrained dark-mode surfaces, spacing, typography, and composable component sensibility.
-- Linear / Raycast / Vercel / Superhuman for polish, hierarchy, and low visual noise.
+  data/
+    cast.ts
+    mock.ts
+    panic.ts
+    pysql.ts
+    resources.ts
+    rubrics.ts
+    schema.ts
+    modules/
+      index.ts
+      meta.ts
+      m0.ts
+      m1.ts
+      m2.ts
+      m3.ts
+      m4.ts
+      m6.ts
+      m8.ts
+      m11.ts
+      m12.ts
+    gym/
+      experiment.ts
+      index.ts
+      ladders.ts
+      logic.ts
+      product.ts
+      python.ts
 
-Do not blindly copy any design system. Use the sensibility.
+  state/
+    localStorageKeys.ts
+    progressStore.ts
+    selectors.ts
 
-### Required UX qualities
+  styles/
+    tokens.css
+    globals.css
+    components.css
 
-- One primary task visible at a time in Focus Mode.
-- Clear page purpose and next action.
-- Strong visual hierarchy.
-- Consistent spacing and alignment.
-- Compact but readable cards.
-- No chip/tag overload before the learner sees the task.
-- No giant walls of metadata.
-- No raw data-object rendering.
-- No cluttered grids as the primary learning surface.
-- Mobile should remain usable.
+  theme/
+    mantineTheme.ts
 
-### Component expectations
+  types/
+    index.ts
+    ladder.ts
+    module.ts
+    pages.ts
+    problem.ts
+    progress.ts
+    quiz.ts
+    resource.ts
+    rubric.ts
+    schema.ts
 
-Reusable components should exist for common patterns:
+  utils/
+    coaching.ts
+    filters.ts
+    formatters.ts
+    highlightSql.ts
+    problemNavigation.ts
+    scoring.ts
+    validation.ts
 
-- Page hero
-- Coach card
-- Guidance panel
-- Task panel
-- Deliverable panel
-- Checklist panel
-- Common confusion panel
-- Validation panel
-- Interview panel
-- Problem card
-- Problem detail
-- Ladder overview
-- Focus runner
-- Empty state
-- Code block
-- Tag
-- Progress
-- Tabs
-- Collapse
+tests/
+  data/
+    integrity.test.ts
+  state/
+    dashboard.test.ts
+    progressStore.test.ts
+    selectors.test.ts
+  ui/
+    render.test.tsx
+  e2e/
+    smoke.spec.ts
+```
 
-If a visual pattern appears three times, make it a component or reusable class.
+Do not create junk-drawer files. Do not turn `App.tsx`, `Dashboard.tsx`, or any single file into a new monolith.
 
-### Copy standards
+## 5. Where things belong
 
-Prefer learner-friendly labels:
+Use these homes consistently:
 
-- “Your task” instead of “Prompt”
-- “Expected deliverable” instead of “Output”
-- “Expected output grain — what one row represents” instead of “Grain”
-- “Reference solution — reveal after trying” instead of “Solution”
-- “Check your work” instead of “Verification”
-- “Common confusion” instead of vague mistake labels
-- “What this problem teaches” instead of terse metadata
+- Learning modules: `src/data/modules/`
+- Module registry: `src/data/modules/index.ts`
+- Practice Gym problem data: `src/data/gym/`
+- Ladder registry: `src/data/gym/ladders.ts`
+- Gym problem aggregation: `src/data/gym/index.ts`
+- Schema/table data: `src/data/schema.ts`
+- Merchant cast: `src/data/cast.ts`
+- Resources: `src/data/resources.ts`
+- Rubrics: `src/data/rubrics.ts`
+- LocalStorage keys: `src/state/localStorageKeys.ts`
+- LocalStorage reads/writes: `src/state/progressStore.ts`
+- Derived state/selectors: `src/state/selectors.ts`
+- Dashboard coaching logic: `src/utils/coaching.ts`
+- Scoring/readiness: `src/utils/scoring.ts`
+- Filters: `src/utils/filters.ts`
+- Problem navigation: `src/utils/problemNavigation.ts`
+- Data validation helpers: `src/utils/validation.ts`
+- Reusable UI primitives: `src/components/ui/`
+- Practice Gym UI: `src/components/gym/`
+- Learning module UI: `src/components/learning/`
+- Dashboard UI: `src/components/dashboard/`
 
-Tone should be serious, encouraging, direct, and high-signal.
+If a new feature does not fit these homes, create a clearly named file/folder. Do not append unrelated code to a nearby file.
 
----
+## 6. Chunked development protocol
 
-## Data-content standards
+Every Claude Code turn must be small, focused, and verifiable.
 
-### Problems
+Before changing files:
 
-Every problem should have enough structure to support rendering, filtering, validation, and review.
+1. Read `README.md`, `CLAUDE.md`, `package.json`, and relevant source files.
+2. Identify the specific task/chunk.
+3. Confirm what already exists.
+4. Avoid redoing completed work.
+5. State the intended files to modify if making a large change.
 
-A problem should generally include:
+During changes:
 
-- id
-- title
-- ladder id
-- mode
-- difficulty
-- priority
-- source inspiration
-- estimated time
-- what this problem teaches
-- why it is harder than prior rung
-- prerequisite skill
-- next recommended problem
-- business context
-- input/schema/context in play
-- task
-- expected deliverable
-- before-you-start checklist
-- hints
-- reference solution or model answer
-- common confusion
-- validation/check-your-work
-- edge cases
-- explain-aloud prompt
+1. Preserve existing IDs unless explicitly instructed.
+2. Preserve public types unless changing them is necessary.
+3. If changing a type, update all impacted data/components/tests in the same turn.
+4. Keep data out of UI components.
+5. Keep state mutations out of UI components.
+6. Keep localStorage isolated in the state layer.
+7. Keep renderers generic and data-driven.
+8. Do not add dependencies without explicit approval.
+9. Do not silently remove learning content.
+10. Do not weaken problem rigor or validation.
 
-For Python problems, include:
-
-- function signature where useful
-- model implementation or pseudocode
-- test cases
-- time complexity
-- memory complexity
-- edge cases
-
-For SQL problems, include:
-
-- expected output grain
-- expected columns
-- sample expected output
-- common wrong answers
-- validation checks
-- edge cases
-- answer comparison rules if executable
-
-For product/causal/statistics problems, include:
-
-- model answer
-- assumptions
-- tradeoffs
-- validation plan
-- rubric or checklist
-
-### Ladders
-
-Every ladder should have:
-
-- id
-- title
-- purpose
-- ordered problem ids
-- category/mode group
-- learning outcome
-- final-boss problem if applicable
-
-The ladder order matters. Do not append problems randomly.
-
-### Modules
-
-Learning modules should include:
-
-- concept explanation
-- mental model
-- predict problems
-- debug problems
-- exercises
-- 5-question quiz
-- confidence gate
-- links into Practice Gym
-
-Every module quiz should have exactly 5 questions mapped to:
-
-1. L0 concept intuition
-2. L1 mechanical/syntax
-3. L2 simple application
-4. L3/L4 multi-step or edge-case reasoning
-5. L5 interview judgment
-
----
-
-## Testing and validation standards
-
-### Data integrity tests should catch
-
-- Duplicate ids.
-- Missing problem fields.
-- Missing ladder references.
-- Problems assigned to non-existent ladders.
-- Ladders referencing missing problems.
-- Invalid mode/difficulty/priority values.
-- Undefined tag colors.
-- Raw internal tokens leaking to user-facing labels.
-- Any rendered `undefined`, `null`, `[object Object]` anomalies.
-- Quizzes not having exactly 5 questions.
-- Missing expected deliverables.
-- Missing check-your-work sections.
-- Missing explain-aloud prompts.
-- pandas-first language.
-
-### State tests should catch
-
-- localStorage parse failure recovery.
-- progress updates.
-- mark attempted/completed/needs review.
-- quiz score updates.
-- focus problem persistence.
-- migration from older progress shapes.
-
-### UI smoke tests should cover
-
-- App renders.
-- Sidebar navigation.
-- Dashboard renders.
-- A module renders.
-- Predict/debug/exercise/quiz flow.
-- Practice Gym Guided Path.
-- Practice Gym Focus Mode.
-- Browse All filters.
-- Review Queue.
-- Problem status persistence.
-- Resources route.
-- Schema Explorer route.
-
-### Before declaring a turn complete
+After changes:
 
 Run:
 
@@ -488,223 +293,407 @@ npm run test
 npm run build
 ```
 
-If UI behavior changed, also run:
+For UI flow changes, also run:
 
 ```bash
 npm run test:e2e
 ```
 
-In the final response, summarize:
+If a command fails, do not claim success. Fix it, or report the failure precisely.
 
-- What changed.
-- What files were touched.
-- What tests were run.
-- Any known limitations.
-- What the next safe step is.
+At the end of every turn, report:
 
-Do not say “all good” unless tests actually passed.
+1. What changed.
+2. Files changed.
+3. Commands run.
+4. Results.
+5. Known risks or limitations.
+6. Recommended next step.
 
----
+## 7. ID and data stability rules
 
-## Browser-only SQL execution plan
+Do not casually rename or regenerate IDs.
 
-This is a future core feature.
+Stable IDs matter for localStorage, problem navigation, tests, and user progress.
 
-### Goal
+Preserve:
 
-Let the learner type SQL in the browser, run it against deterministic synthetic Stripe-style datasets, and receive feedback.
+- problem IDs,
+- ladder IDs,
+- module IDs,
+- quiz IDs where present,
+- resource IDs,
+- schema table IDs/names,
+- progress state shape.
 
-### Constraints
+If an ID or progress shape must change, implement a migration in the state layer and test it.
 
-- All execution happens in browser.
-- No backend.
-- No API call for grading.
-- No secrets.
-- No remote code execution.
+Never duplicate IDs.
 
-### Recommended stages
+## 8. Learning module requirements
 
-#### Stage 1: Executable SQL infrastructure
+Learning modules are not articles. They are guided skill-building surfaces.
 
-Add:
+Each module should include, where applicable:
+
+- purpose / what this teaches,
+- why it matters for Stripe,
+- concept explanation,
+- plain-English mental model,
+- SQL or reasoning pattern,
+- Predict drills,
+- Debug drills,
+- exercises,
+- common mistakes,
+- edge cases,
+- interview script,
+- follow-up prompt,
+- 5-question quiz,
+- confidence rating,
+- completion gate,
+- links to relevant Practice Gym ladders.
+
+Every module quiz must contain exactly 5 questions:
+
+1. L0 concept intuition,
+2. L1 mechanical syntax or recognition,
+3. L2 simple applied problem,
+4. L3/L4 multi-step or edge-case reasoning,
+5. L5 interview judgment.
+
+A module should not be treated as interview-ready unless the learner scores at least 4/5 and has attempted at least one hard/final-boss problem in the related ladder.
+
+## 9. Practice Gym requirements
+
+The Practice Gym is the core training surface.
+
+It must be problem-forward, not catalog-forward.
+
+Required surfaces:
+
+- Guided Path,
+- Focus Mode,
+- Browse All,
+- Review Queue.
+
+Focus Mode is the main learning experience. It should show one problem at a time.
+
+Every problem should support:
+
+- clear title,
+- mode,
+- difficulty,
+- priority,
+- estimated time,
+- source inspiration,
+- what you need to do,
+- expected deliverable,
+- why this matters for Stripe,
+- why this is the next step,
+- before-you-start checklist,
+- context/schema/input,
+- task,
+- progressive hints,
+- reference solution / model answer,
+- common confusion,
+- validation / check-your-work,
+- explain-aloud prompt,
+- attempted / completed / needs-review status.
+
+Browse All should remain compact. Do not render giant expanded problem details inside the catalog.
+
+Problems should be arranged in ladders, not dumped into a flat bag.
+
+Difficulty should progress:
+
+1. Foundation / recognition,
+2. Easy / mechanical,
+3. Medium / applied,
+4. Hard / multi-step,
+5. Edge-case hard,
+6. Final boss / interview-hard.
+
+Final-boss problems should be ambiguous, timed, and require assumptions, decomposition, edge cases, validation, and explanation.
+
+## 10. Existing training categories
+
+The app currently trains:
+
+- SQL fundamentals,
+- conditional aggregation,
+- joins and grain,
+- window functions,
+- revenue / ledger reasoning,
+- refunds / disputes,
+- data logic / problem decomposition,
+- Python production scripting,
+- product analytics,
+- experimentation and causal reasoning.
+
+If adding MLE/statistics or Stripe object literacy later, use the same ladder and Focus Mode standards.
+
+## 11. Browser-only execution policy
+
+Any future “run code and check answer” feature must execute entirely in the browser.
+
+Non-negotiable:
+
+- No backend grading.
+- No remote SQL execution.
+- No sending learner code to an API.
+- No server-side Python execution.
+- No secrets or environment variables for execution.
+
+Preferred staged approach:
+
+1. Static pattern checks for early beginner drills.
+2. Browser SQL runner for executable SQL problems.
+3. Deterministic seed datasets bundled in the app.
+4. Result normalization and comparison.
+5. Feedback engine for common mistakes.
+6. Optional browser-only Python execution later, only after review.
+
+Potential browser SQL engines:
+
+- `sql.js` for simpler SQLite-based local SQL execution.
+- DuckDB-Wasm for richer analytical SQL, only if the added complexity is justified.
+
+Execution architecture should be isolated under a dedicated folder, for example:
 
 ```text
 src/sqlRunner/
   engine.ts
   seedDatabase.ts
-  datasets/
   normalizeResults.ts
   compareResults.ts
   feedback.ts
-  types.ts
+  fixtures/
 ```
 
-Start with one lightweight engine, likely `sql.js`, unless DuckDB-Wasm is deliberately chosen for advanced analytical SQL. Keep the engine behind an interface so it can be swapped later.
+Executable problems should be explicitly marked. Not every problem needs execution.
 
-#### Stage 2: Seed datasets
+## 12. State management rules
 
-Create small, deterministic datasets matching the synthetic Stripe schema:
+`src/state/progressStore.ts` is the localStorage boundary.
 
-- merchants
-- customers
-- charges
-- refunds
-- disputes
-- balance_transactions
-- connected_accounts
+Components must not call `localStorage` directly.
 
-Datasets should intentionally include edge cases:
+State should be versioned or migratable if the shape changes.
 
-- Northwind high failures
-- Velvet high refunds
-- PixelForge disputes
-- GlobalGoods multi-currency
-- CloudDesk duplicate idempotency keys
-- MarketHub platform/connected accounts
+Corrupt storage must not crash the app. It should fall back safely.
 
-#### Stage 3: Executable problem type
+Do not wipe learner progress unless explicitly requested.
 
-Extend problem types:
+Selectors should be pure, stable, and tested.
 
-```ts
-executable?: {
-  engine: 'sqlite' | 'duckdb';
-  datasetId: string;
-  expectedColumns: string[];
-  expectedRows: unknown[][];
-  comparison: 'exact' | 'unordered' | 'tolerance' | 'shape-only';
-  feedbackRules: FeedbackRule[];
-}
-```
+## 13. Testing requirements
 
-#### Stage 4: Result comparison
+Tests are part of the architecture, not a formality.
 
-Compare:
+Data integrity tests should protect against:
 
-- syntax success/failure
-- columns
-- row count
-- values
-- ordering, if required
-- tolerance for rates/decimals
-- grain mistakes
+- duplicate problem IDs,
+- duplicate ladder IDs,
+- ladder references to missing problems,
+- problems missing required guided fields,
+- unknown modes,
+- unknown difficulty values,
+- unknown priority values,
+- every quiz not having exactly 5 questions,
+- raw pandas-first framing,
+- resources mapping to invalid targets,
+- undefined tag/label values.
 
-#### Stage 5: Feedback rules
+State tests should cover:
 
-Examples:
+- default progress state,
+- persistence,
+- corrupt storage handling,
+- problem status updates,
+- module status updates,
+- selector outputs,
+- dashboard/coaching selectors.
 
-- All rates are 0: likely integer division.
-- Too many rows: possible join fan-out.
-- Missing merchants: likely INNER JOIN where LEFT JOIN was needed.
-- Wrong denominator: includes only successful charges.
-- Currency blended: missing GROUP BY currency.
-- Pending included: denominator ambiguity.
+UI smoke tests should cover:
 
-Add tests for every feedback rule.
+- dashboard rendering,
+- module rendering,
+- Practice Gym rendering,
+- Focus Mode rendering,
+- Browse All rendering,
+- Review Queue rendering,
+- Schema Explorer rendering,
+- Resources rendering,
+- Mock/Panic/Reasoning pages.
 
----
+E2E smoke tests should cover the most important user flows:
 
-## Cloudflare deployment standards
+- open dashboard,
+- open a module,
+- open Practice Gym Focus Mode,
+- browse problems,
+- mark a problem attempted/completed,
+- open Review Queue,
+- open resources.
 
-The app should stay compatible with Cloudflare Pages.
+## 14. UI / visual standards
 
-Expected deployment:
+The component library is **Mantine v7** (`@mantine/core`, `@mantine/hooks`), with `@tabler/icons-react` for icons. The theme lives in `src/theme/mantineTheme.ts` and is mirrored as CSS variables in `src/styles/tokens.css` so Mantine components and the remaining hand-rolled view markup stay on one palette. `MantineProvider` (forced dark) wraps the app in `App.tsx`.
+
+Build UI out of Mantine components first (`Tabs`, `Accordion`, `Paper`/`Card`, `Badge`, `Alert`, `Radio`, `Rating`, `Progress`, `RingProgress`, `NavLink`). The shared `ui/` primitives wrap Mantine while preserving small local APIs; prefer extending those over scattering raw Mantine props through view files.
+
+Reach for the design sensibility of Linear / Raycast / Vercel / Superhuman: calm hierarchy, generous spacing, confident but not noisy color.
+
+Do not add another UI framework (Ant Design, shadcn, Tailwind, Chakra, MUI, etc.) — Mantine is the chosen stack. Adding Mantine sub-packages (`@mantine/dates`, `@mantine/notifications`, etc.) still needs explicit approval per §17.
+
+Readability is a first-class requirement (the app is used for 6–7 hour sessions):
+
+- Body text is bright (`--t-1`) on the deep navy base; never dim core reading text to a muted grey.
+- Base font is 15px with a ~1.6 line height; do not ship sub-13px reading text.
+- Use color with intent — color-coded module tabs, status-colored badges/alerts, gradient accents on primary CTAs and the hero — without turning cards into chip clusters.
+
+Keep UI:
+
+- clear,
+- aligned,
+- uncluttered,
+- consistent,
+- readable for 6–7 hour study sessions,
+- responsive,
+- keyboard accessible where practical.
+
+Avoid:
+
+- giant chip clusters,
+- visually noisy cards,
+- nested boxes everywhere,
+- raw data dumps,
+- misleading progress,
+- buried problem prompts,
+- tiny unreadable text,
+- low-contrast text on the dark background,
+- inconsistent spacing.
+
+## 15. Content quality rules
+
+Problems must be original and Stripe-flavoured.
+
+Use external resources only as pattern inspiration:
+
+- SQLBolt,
+- PostgreSQL Exercises,
+- Mode SQL tutorials,
+- WindowFunctions-style drills,
+- DataLemur-style prompts,
+- StrataScratch-style free patterns,
+- public GitHub SQL interview repositories,
+- Stripe Sigma / Stripe docs,
+- Stripe API docs,
+- Stripe `python-interview-prep`,
+- data-science interview repos,
+- probability/statistics interview repos,
+- Causal Inference for the Brave and True.
+
+Do not copy proprietary or gated prompts verbatim.
+
+Every resource should map to internal Practice Gym filters or ladders. Resources are secondary; the internal gym is primary.
+
+## 16. Cloudflare Pages deployment
+
+The app is a static Vite app.
+
+Local commands:
 
 ```bash
 npm install
 npm run build
 ```
 
-Cloudflare config:
-
-- Framework: Vite
-- Build command: `npm run build`
-- Output directory: `dist`
-- Node version: 20+
-
-Do not require backend services for the initial deployment. Do not add environment variables unless absolutely necessary.
-
-If URL-based routing is later added, include a Cloudflare Pages SPA fallback such as:
+Cloudflare Pages settings:
 
 ```text
-/* /index.html 200
+Framework preset: Vite
+Build command: npm run build
+Build output directory: dist
+Node version: 20
 ```
 
----
+Node is pinned by `.nvmrc`.
 
-## Development protocol for Claude Code
+The repo includes:
 
-When asked to make a change:
+- `public/_headers` for cache headers,
+- `.github/workflows/ci.yml` for typecheck + tests + build on push/PR,
+- no backend,
+- no secrets,
+- no environment variables for initial deployment.
 
-1. Inspect relevant files before editing.
-2. Identify the smallest safe change.
-3. Preserve existing functionality unless explicitly told otherwise.
-4. Update types first if data shape changes.
-5. Update data and renderers separately.
-6. Add or update tests.
-7. Run the required checks.
-8. Report honestly what passed and what did not.
+Before deployment, run:
 
-Do not:
+```bash
+npm run typecheck
+npm run test
+npm run build
+npm audit
+```
 
-- Rewrite the whole app casually.
-- Add large features without a turn plan.
-- Add untyped data.
-- Add UI that is not connected to state.
-- Add state that is not tested.
-- Add placeholder sections pretending to be complete.
-- Expand content volume before the UX for that content is clear.
-- Add browser SQL execution inside random components.
-- Add a dependency without explaining why it is necessary.
+If vulnerabilities remain, report them honestly. Do not ignore a critical audit issue without explanation.
 
-Prefer controlled turns:
+## 17. Dependency policy
 
-- Architecture turn.
-- Data migration turn.
-- Renderer turn.
-- State turn.
-- Test turn.
-- UI polish turn.
-- Deployment turn.
+Do not add dependencies unless they clearly improve maintainability or unlock a required capability.
 
-Each turn must leave the app in a working state.
+Before adding a dependency, explain:
 
----
+- why it is needed,
+- why local code is insufficient,
+- bundle/runtime impact,
+- security/audit impact,
+- whether it affects Cloudflare deployment.
 
-## Definition of done
+Approved runtime UI stack: `@mantine/core`, `@mantine/hooks`, `@tabler/icons-react` (see §14). Other Mantine sub-packages and any new UI framework still require approval.
 
-A change is done only when:
+For browser SQL execution later, dependency approval is required before adding `sql.js`, DuckDB-Wasm, Monaco, CodeMirror, Pyodide, or similar.
 
-- TypeScript passes.
-- Unit/data/state tests pass.
-- Build passes.
-- Relevant e2e/smoke tests pass or a reason is given.
-- UI remains coherent.
-- localStorage state is safe.
-- No major route breaks.
-- No malformed data is introduced.
-- No placeholder content is presented as complete.
-- The learner experience is clearer, not more cluttered.
+## 18. Performance and bundle discipline
 
-If the change touches problem data, add integrity checks.
-If the change touches UI flow, add a smoke test.
-If the change touches state, add state tests.
-If the change touches SQL execution, add engine/comparison tests.
+The app should stay fast as a static site.
 
----
+Avoid unnecessary heavy libraries. Mantine pulls in a non-trivial JS/CSS payload; before the next deploy push, consider route-level code-splitting (`React.lazy` + dynamic `import()`) to bring the main JS chunk back under the 500 kB Vite warning threshold.
 
-## Current migration priority
+Keep data imports organized so future code splitting is possible.
 
-Before adding more content, keep the repo migration disciplined.
+Avoid expensive recalculations inside render paths. Use pure selectors/utilities where possible.
 
-Recommended order:
+Do not add huge generated blobs directly inside components.
 
-1. Finish migrating current single-file content into typed data files.
-2. Ensure all current SQL and non-SQL problems render through the new typed Gym.
-3. Ensure modules render through typed module data.
-4. Ensure the Practice Gym Focus Mode, Guided Path, Browse All, and Review Queue match the monolith behavior.
-5. Add data integrity tests that prevent regressions.
-6. Only then add browser-based SQL execution.
-7. Only then expand problem volume.
+## 19. Accessibility and usability
 
-The principle: **architecture first, then parity, then executable checking, then scale.**
+Maintain:
+
+- readable contrast,
+- visible focus states,
+- semantic buttons/labels where practical,
+- reasonable keyboard navigation,
+- responsive layouts,
+- no hover-only critical actions.
+
+Focus Mode should remain calm and one-task-at-a-time.
+
+## 20. Non-negotiables
+
+- Keep the app working after every turn.
+- Do not leave broken intermediate states.
+- Do not expand scope silently.
+- Do not remove content without explicit instruction.
+- Do not weaken problem rigor.
+- Do not convert final-boss problems into shallow summaries.
+- Do not add backend code.
+- Do not add remote execution.
+- Do not assume pandas fluency.
+- Do not skip tests.
+- Do not claim tests passed unless they actually ran.
+- Do not leave dead buttons.
+- Do not leave raw `undefined`, `null`, or `[object Object]` in UI.
+- Do not introduce duplicate IDs.
+- Do not create junk-drawer files.
