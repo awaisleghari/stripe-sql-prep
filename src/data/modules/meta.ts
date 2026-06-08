@@ -26,6 +26,10 @@ export const MODULE_META: Record<ModuleId, { why: string; outcome: string }> = {
     why: 'Charges, refunds, disputes, customers and merchants live in separate tables — you must combine them without inflating the numbers.',
     outcome: 'choose INNER vs LEFT deliberately, write anti-joins, preserve zero-activity rows, and avoid fan-out.',
   },
+  m5: {
+    why: 'Hard Stripe metrics are assembled from steps — eligible charges, pre-aggregated refunds and disputes, a merchant denominator — and CTEs make that reasoning correct and reviewable.',
+    outcome: 'break a complex metric into named CTEs, pre-aggregate one-to-many tables before joining to avoid fan-out, and choose CTE vs subquery deliberately.',
+  },
   m6: {
     why: 'Many Stripe questions need first/last events, previous-period comparisons, running totals or rankings — without losing row-level detail.',
     outcome: 'use ROW_NUMBER, RANK, LAG/LEAD and SUM OVER, and pick the correct window frame.',

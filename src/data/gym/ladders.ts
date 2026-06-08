@@ -39,6 +39,24 @@ export const LADDERS: Ladder[] = [
     ]
   },
   {
+    "id": "cte",
+    "title": "CTEs & Subqueries",
+    "category": "sql",
+    "module": "m5",
+    "concept": "cte",
+    "blurb": "Break a metric into named steps; pre-aggregate refunds/disputes before joining to avoid fan-out.",
+    "problemIds": [
+      "ce1",
+      "ce2",
+      "ce3",
+      "ce4",
+      "ce5",
+      "ce6",
+      "ce7",
+      "ce8"
+    ]
+  },
+  {
     "id": "win",
     "title": "Window Functions",
     "category": "sql",

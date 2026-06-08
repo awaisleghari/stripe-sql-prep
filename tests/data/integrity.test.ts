@@ -40,10 +40,37 @@ describe('module roadmap', () => {
   });
 });
 
+describe('CTEs & Subqueries (m5 + cte ladder)', () => {
+  it('module m5 exists and is a complete CTE module', () => {
+    const m = getModule('m5');
+    expect(m).toBeTruthy();
+    expect(m!.title).toBe('CTEs & Subqueries');
+    expect(m!.quiz.length).toBe(5);
+    expect(m!.predicts.length).toBeGreaterThanOrEqual(1);
+    expect(m!.debugs.length).toBeGreaterThanOrEqual(1);
+    expect(m!.exercises.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('cte ladder exists, drills m5, and has 8 wired SQL problems', () => {
+    const l = LADDERS.find((x) => x.id === 'cte');
+    expect(l).toBeTruthy();
+    expect(l!.module).toBe('m5');
+    expect(l!.category).toBe('sql');
+    expect(l!.problemIds.length).toBe(8);
+    for (const pid of l!.problemIds) {
+      const p = getProblem(pid);
+      expect(p, `cte references ${pid}`).toBeTruthy();
+      expect(p!.ladder).toBe('cte');
+      expect(p!.mode).toBe('SQL');
+      expect(p!.module).toBe('m5');
+    }
+  });
+});
+
 describe('migrated dataset size', () => {
-  it('has all 68 problems and 9 ladders', () => {
-    expect(PROBLEMS.length).toBe(68);
-    expect(LADDERS.length).toBe(9);
+  it('has all 76 problems and 10 ladders', () => {
+    expect(PROBLEMS.length).toBe(76);
+    expect(LADDERS.length).toBe(10);
   });
   it('every ladder problem-count matches its problemIds', () => {
     const byLadder: Record<string, number> = {};
@@ -110,8 +137,8 @@ describe('module data integrity', () => {
     }
   });
 
-  it('has all 9 migrated modules, each with concept, predicts, debugs and exercises', () => {
-    expect(MODULES.length).toBe(9);
+  it('has all 10 migrated modules, each with concept, predicts, debugs and exercises', () => {
+    expect(MODULES.length).toBe(10);
     for (const m of MODULES) {
       expect(m.concept, `concept for ${m.id}`).toBeTruthy();
       expect(m.predicts.length, `predicts for ${m.id}`).toBeGreaterThanOrEqual(1);

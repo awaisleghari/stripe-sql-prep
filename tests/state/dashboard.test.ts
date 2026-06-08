@@ -15,7 +15,7 @@ beforeEach(() => __resetForTests());
 describe('dashboard selectors', () => {
   it('categoryCoverage reflects completions per mode', () => {
     const sql0 = categoryCoverage(getState(), PROBLEMS).find((c) => c.mode === 'SQL')!;
-    expect(sql0.total).toBe(40);
+    expect(sql0.total).toBe(48); // 40 + 8 CTE ladder problems
     expect(sql0.completed).toBe(0);
     setProblemStatus('ca1', 'completed');
     const sql1 = categoryCoverage(getState(), PROBLEMS).find((c) => c.mode === 'SQL')!;

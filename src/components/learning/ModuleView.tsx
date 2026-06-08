@@ -18,7 +18,8 @@ import {
 import type { Predict, Debug, Module, Badge as ModuleBadge, TagColor, ReasoningFramework } from '@/types';
 import { MODULES, getModule } from '@/data/modules';
 import { MODULE_META } from '@/data/modules/meta';
-import { useProgress, answerQuiz, setConfidence, setModuleComplete, setExerciseDone, setRoute } from '@/state/progressStore';
+import { LADDERS } from '@/data/gym';
+import { useProgress, answerQuiz, setConfidence, setModuleComplete, setExerciseDone, setRoute, selectLadder } from '@/state/progressStore';
 import { quizScore, moduleReady } from '@/utils/scoring';
 import { PRIORITY_META } from '@/utils/formatters';
 import { CodeBlock } from '@/components/ui/CodeBlock';
@@ -417,6 +418,11 @@ function ConfidenceTab({ m }: { m: Module }) {
   const score = quizScore(m, ms);
   const att = ms?.att ?? {};
   const exDone = m.exercises.filter((ex) => att[ex.id]).length;
+  const ladder = LADDERS.find((l) => l.module === m.id);
+  const practice = () => {
+    if (ladder) selectLadder(ladder.id);
+    setRoute('gym');
+  };
   return (
     <Stack gap="lg">
       <Paper withBorder p="md" radius="md">
@@ -435,7 +441,7 @@ function ConfidenceTab({ m }: { m: Module }) {
         <Button variant={ms?.complete ? 'primary' : 'default'} onClick={() => setModuleComplete(m.id, !ms?.complete)}>
           {ms?.complete ? '✓ Marked complete' : 'Mark module complete'}
         </Button>
-        <Button onClick={() => setRoute('gym')}>Practice this in the Gym →</Button>
+        <Button onClick={practice}>{ladder ? `Practice the ${ladder.title} ladder →` : 'Practice this in the Gym →'}</Button>
       </Group>
       {!ready && (
         <Alert variant="light" color="yellow" radius="md" icon={<IconAlertTriangle />} title="Interview-ready gate">

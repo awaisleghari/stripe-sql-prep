@@ -32,7 +32,7 @@ export const MODULE_ROADMAP: RoadmapDay[] = [
     day: 'Day 3',
     theme: 'Composition & Windows',
     slots: [
-      { id: 'm5', locked: true, lockedTitle: 'CTEs & Subqueries' },
+      { id: 'm5', locked: false },
       { id: 'm6', locked: false },
     ],
   },
