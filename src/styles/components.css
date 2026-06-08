@@ -121,6 +121,14 @@
 /* Dashboard category cards — subtle live hover */
 .cov-card { transition: border-color .16s ease, transform .16s ease; }
 .cov-card:hover { border-color: rgba(110, 142, 251, .32); transform: translateY(-1px); }
+
+/* Progress tracks get a faint tint so empty (0%) bars read as potential, not dead */
+.mantine-Progress-root { background: linear-gradient(90deg, rgba(110, 142, 251, .08), rgba(255, 255, 255, .03)); }
+
+/* Recommended-next card: featured accent + glow */
+.rec-card { position: relative; overflow: hidden; box-shadow: inset 3px 0 0 0 var(--c-primary), 0 12px 30px -22px rgba(110, 142, 251, .5); border-color: rgba(110, 142, 251, .22); }
+.rec-card::after { content: ''; position: absolute; top: -55%; right: -5%; width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, rgba(110, 142, 251, .13), transparent 70%); pointer-events: none; }
+.rec-card > * { position: relative; z-index: 1; }
 .grad-ring-pct { font-size: 32px; font-weight: 780; line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; background: linear-gradient(120deg, #cfd9ff, #a7f3d0); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .grad-ring-sub { font-size: 10.5px; color: var(--t-3); letter-spacing: .8px; text-transform: uppercase; margin-top: 4px; }
 

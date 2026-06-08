@@ -1,4 +1,4 @@
-import { Progress, Group, Stack, Text, SimpleGrid, Paper } from '@mantine/core';
+import { Progress, Group, Stack, Text, SimpleGrid, Paper, ThemeIcon } from '@mantine/core';
 import { GradientRing } from '@/components/ui/GradientRing';
 import { IconBook2, IconBarbell, IconTargetArrow, IconLifebuoy } from '@tabler/icons-react';
 import { MODULES } from '@/data/modules';
@@ -35,12 +35,13 @@ const MODE_COLOR: Record<Mode, string> = {
   Mixed: 'blue',
 };
 
-function Pillar({ label, pct, color }: { label: string; pct: number; color: string }) {
+function Pillar({ icon, label, pct, color }: { icon: React.ReactNode; label: string; pct: number; color: string }) {
   return (
     <Group gap="sm" wrap="nowrap" align="center">
-      <Text w={92} fz="xs" fw={600} c="dimmed">{label}</Text>
+      <ThemeIcon variant="light" color={color} size={30} radius="md">{icon}</ThemeIcon>
+      <Text w={88} fz="sm" fw={600}>{label}</Text>
       <Progress value={pct} color={color} size="md" radius="xl" style={{ flex: 1 }} />
-      <Text w={40} ta="right" fz="xs" fw={700} className="tnum">{pct}%</Text>
+      <Text w={42} ta="right" fz="sm" fw={700} className="tnum">{pct}%</Text>
     </Group>
   );
 }
@@ -82,11 +83,22 @@ export function Dashboard() {
         <div className="section-label">Stripe interview readiness</div>
         <Group align="center" gap={32} mt="sm" wrap="nowrap">
           <GradientRing value={blend.overall} />
-          <Stack gap={10} style={{ flex: 1, minWidth: 0 }}>
-            <Text size="sm" c="dimmed">Blended across foundation, practice, and simulation.</Text>
-            <Pillar label="Foundation" pct={blend.foundation} color="blue" />
-            <Pillar label="Practice" pct={blend.practice} color="teal" />
-            <Pillar label="Simulation" pct={blend.simulation} color="grape" />
+          <Stack gap={11} style={{ flex: 1, minWidth: 0 }}>
+            <Text size="sm" c="dimmed">
+              {blend.overall === 0
+                ? 'Fresh start. Your readiness climbs as you make modules interview-ready, clear gym drills, and self-score a mock.'
+                : 'Blended across foundation, practice, and simulation.'}
+            </Text>
+            <Pillar icon={<IconBook2 size={17} />} label="Foundation" pct={blend.foundation} color="blue" />
+            <Pillar icon={<IconBarbell size={17} />} label="Practice" pct={blend.practice} color="teal" />
+            <Pillar icon={<IconTargetArrow size={17} />} label="Simulation" pct={blend.simulation} color="grape" />
+            {blend.overall === 0 && (
+              <Group mt={4}>
+                <Button variant="primary" leftSection={<IconBook2 size={16} />} onClick={() => openModule(MODULES[0].id)}>
+                  Start with Day 1 →
+                </Button>
+              </Group>
+            )}
           </Stack>
         </Group>
         <Text c="dimmed" fz={11.5} mt="sm">
@@ -113,8 +125,8 @@ export function Dashboard() {
 
       {/* recommended next problem */}
       {rec && (
-        <Card>
-          <div className="section-label">Recommended next problem</div>
+        <Card className="rec-card">
+          <div className="section-label" style={{ color: 'var(--c-primary)' }}>Recommended next problem</div>
           <Group gap={8} my="xs" align="center">
             <Text fw={700}>{rec.title}</Text>
             <Tag color={DIFFICULTY_META[rec.difficulty].color}>{DIFFICULTY_META[rec.difficulty].label}</Tag>
