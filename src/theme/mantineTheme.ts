@@ -43,19 +43,19 @@ export const theme = createTheme({
   primaryShade: { light: 6, dark: 5 },
   colors: { brand, dark },
 
-  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  fontFamily: "'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   fontFamilyMonospace: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace',
   fontSizes: { xs: '12px', sm: '14px', md: '15.5px', lg: '17.5px', xl: '21px' },
-  lineHeights: { xs: '1.45', sm: '1.5', md: '1.6', lg: '1.65', xl: '1.65' },
+  lineHeights: { xs: '1.45', sm: '1.5', md: '1.6', lg: '1.62', xl: '1.62' },
 
   headings: {
     fontFamily: 'inherit',
-    fontWeight: '680',
+    fontWeight: '650',
     sizes: {
-      h1: { fontSize: '26px', lineHeight: '1.2' },
-      h2: { fontSize: '21px', lineHeight: '1.25' },
-      h3: { fontSize: '17px', lineHeight: '1.3' },
-      h4: { fontSize: '15px', lineHeight: '1.35' },
+      h1: { fontSize: '27px', lineHeight: '1.15', fontWeight: '720' },
+      h2: { fontSize: '21px', lineHeight: '1.2', fontWeight: '680' },
+      h3: { fontSize: '16.5px', lineHeight: '1.3', fontWeight: '650' },
+      h4: { fontSize: '14px', lineHeight: '1.35', fontWeight: '650' },
     },
   },
 

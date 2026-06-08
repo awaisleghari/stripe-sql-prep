@@ -31,12 +31,12 @@
 .crumb-sep { margin: 0 8px; color: var(--t-4); }
 .crumb b { color: var(--t-1); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .readiness-chip { display: inline-flex; align-items: center; gap: 9px; padding: 5px 16px 5px 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 30px; box-shadow: var(--shadow-card); }
-.rc-label { font-size: 12px; color: var(--t-2); font-weight: 550; white-space: nowrap; }
+.rc-label { font-size: 12px; color: var(--t-2); font-weight: 550; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .rc-label b { color: var(--t-1); font-weight: 700; margin-left: 2px; }
 
 /* ---------- Learning-module hero ---------- */
 .mod-hero { background: linear-gradient(180deg, rgba(110, 142, 251, .08), transparent 64%), var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: 24px 26px; margin-bottom: 14px; }
-.hero-title { font-size: 27px; font-weight: 700; letter-spacing: -.3px; margin: 0; line-height: 1.18; background: linear-gradient(92deg, #f1f4fb 10%, #b9c6ff 90%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-title { font-size: 28px; font-weight: 720; letter-spacing: -.55px; margin: 0; line-height: 1.13; background: linear-gradient(94deg, #f3f5fc 8%, #c2cdff 92%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .hero-why { color: var(--t-2); font-size: 14.5px; margin: 10px 0 0; max-width: 800px; line-height: 1.6; }
 
 /* ---------- Mantine surface polish ---------- */
@@ -121,7 +121,7 @@
 /* Dashboard category cards — subtle live hover */
 .cov-card { transition: border-color .16s ease, transform .16s ease; }
 .cov-card:hover { border-color: rgba(110, 142, 251, .32); transform: translateY(-1px); }
-.grad-ring-pct { font-size: 31px; font-weight: 800; line-height: 1; letter-spacing: -.5px; background: linear-gradient(120deg, #cfd9ff, #a7f3d0); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.grad-ring-pct { font-size: 32px; font-weight: 780; line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; background: linear-gradient(120deg, #cfd9ff, #a7f3d0); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .grad-ring-sub { font-size: 10.5px; color: var(--t-3); letter-spacing: .8px; text-transform: uppercase; margin-top: 4px; }
 
 /* Premium hero panel (dashboard readiness) */

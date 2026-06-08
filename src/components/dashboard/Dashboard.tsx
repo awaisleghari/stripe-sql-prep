@@ -40,7 +40,7 @@ function Pillar({ label, pct, color }: { label: string; pct: number; color: stri
     <Group gap="sm" wrap="nowrap" align="center">
       <Text w={92} fz="xs" fw={600} c="dimmed">{label}</Text>
       <Progress value={pct} color={color} size="md" radius="xl" style={{ flex: 1 }} />
-      <Text w={40} ta="right" fz="xs" fw={700}>{pct}%</Text>
+      <Text w={40} ta="right" fz="xs" fw={700} className="tnum">{pct}%</Text>
     </Group>
   );
 }
@@ -137,7 +137,7 @@ export function Dashboard() {
                     <span style={{ width: 9, height: 9, borderRadius: 99, flex: '0 0 auto', background: `var(--mantine-color-${MODE_COLOR[c.mode]}-5)` }} />
                     <Text fw={650} size="sm">{MODE_LABEL[c.mode]}</Text>
                   </Group>
-                  <Text size="xs" fw={600} c={done ? 'teal' : 'dimmed'}>{c.completed}/{c.total}</Text>
+                  <Text size="xs" fw={600} c={done ? 'teal' : 'dimmed'} className="tnum">{c.completed}/{c.total}</Text>
                 </Group>
                 <Progress value={c.pct} color={done ? 'teal' : MODE_COLOR[c.mode]} size="sm" radius="xl" my="sm" />
                 <Button small onClick={() => practiceCategory(c.mode)}>
