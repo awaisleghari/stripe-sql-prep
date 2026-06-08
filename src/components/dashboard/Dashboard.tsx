@@ -1,3 +1,5 @@
+import { RingProgress, Progress, Group, Stack, Text, SimpleGrid, Paper } from '@mantine/core';
+import { IconBook2, IconBarbell, IconTargetArrow, IconLifebuoy } from '@tabler/icons-react';
 import { MODULES } from '@/data/modules';
 import { LADDERS, PROBLEMS, getProblem } from '@/data/gym';
 import { MOCKS } from '@/data/mock';
@@ -18,13 +20,13 @@ import { Callout } from '@/components/ui/Callout';
 
 const RUBRIC_BY_ID: Record<string, Rubric> = Object.fromEntries(RUBRICS.map((r) => [r.id, r]));
 
-function Pillar({ label, pct }: { label: string; pct: number }) {
+function Pillar({ label, pct, color }: { label: string; pct: number; color: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
-      <span style={{ width: 96, fontSize: 12, color: 'var(--t-2)', fontWeight: 600 }}>{label}</span>
-      <div className="progress" style={{ flex: 1 }}><div style={{ width: `${pct}%` }} /></div>
-      <span style={{ width: 38, textAlign: 'right', fontSize: 12, fontWeight: 700, color: 'var(--t-1)' }}>{pct}%</span>
-    </div>
+    <Group gap="sm" wrap="nowrap" align="center">
+      <Text w={92} fz="xs" fw={600} c="dimmed">{label}</Text>
+      <Progress value={pct} color={color} size="md" radius="xl" style={{ flex: 1 }} />
+      <Text w={40} ta="right" fz="xs" fw={700}>{pct}%</Text>
+    </Group>
   );
 }
 
@@ -38,10 +40,9 @@ export function Dashboard() {
   const rec = getProblem(recId);
   const recLadder = rec ? ladderOf(LADDERS, rec.id) : undefined;
 
-  // map a coaching action to a concrete navigation
   const runAction = (a: NudgeAction) => {
     if (a.type === 'route') {
-      if (a.value === 'gym') { setGymTab('browse'); }
+      if (a.value === 'gym') setGymTab('browse');
       setRoute(a.value as 'gym' | 'learn' | 'mock');
     } else if (a.type === 'problem') {
       const p = getProblem(a.value);
@@ -64,16 +65,29 @@ export function Dashboard() {
       {/* blended readiness hero */}
       <Card>
         <div className="section-label">Stripe interview readiness</div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, margin: '6px 0 6px' }}>
-          <span style={{ fontSize: 44, fontWeight: 800, color: 'var(--c-primary)', lineHeight: 1 }}>{blend.overall}%</span>
-          <span className="page-sub">blended across foundation, practice, and simulation</span>
-        </div>
-        <Pillar label="Foundation" pct={blend.foundation} />
-        <Pillar label="Practice" pct={blend.practice} />
-        <Pillar label="Simulation" pct={blend.simulation} />
-        <p className="page-sub" style={{ margin: '10px 0 0', fontSize: 11.5 }}>
+        <Group align="center" gap="xl" mt="sm" wrap="nowrap">
+          <RingProgress
+            size={132}
+            thickness={11}
+            roundCaps
+            sections={[{ value: blend.overall, color: 'brand' }]}
+            label={
+              <div style={{ textAlign: 'center' }}>
+                <Text fw={800} fz={26} c="brand" lh={1}>{blend.overall}%</Text>
+                <Text fz="xs" c="dimmed">ready</Text>
+              </div>
+            }
+          />
+          <Stack gap={10} style={{ flex: 1, minWidth: 0 }}>
+            <Text size="sm" c="dimmed">Blended across foundation, practice, and simulation.</Text>
+            <Pillar label="Foundation" pct={blend.foundation} color="blue" />
+            <Pillar label="Practice" pct={blend.practice} color="teal" />
+            <Pillar label="Simulation" pct={blend.simulation} color="grape" />
+          </Stack>
+        </Group>
+        <Text c="dimmed" fz={11.5} mt="sm">
           Foundation = modules made interview-ready · Practice = gym problems completed · Simulation = Mock 1 self-score
-        </p>
+        </Text>
       </Card>
 
       {/* coaching nudges */}
@@ -97,11 +111,11 @@ export function Dashboard() {
       {rec && (
         <Card>
           <div className="section-label">Recommended next problem</div>
-          <div className="pill-row" style={{ margin: '8px 0' }}>
-            <strong>{rec.title}</strong>
+          <Group gap={8} my="xs" align="center">
+            <Text fw={700}>{rec.title}</Text>
             <Tag color={DIFFICULTY_META[rec.difficulty].color}>{DIFFICULTY_META[rec.difficulty].label}</Tag>
             {recLadder && <Tag color="geekblue">{recLadder.title}</Tag>}
-          </div>
+          </Group>
           <Button variant="primary" onClick={() => focusProblem(rec.id, rec.ladder)}>Open in Focus Mode →</Button>
         </Card>
       )}
@@ -109,31 +123,34 @@ export function Dashboard() {
       {/* skill coverage by category */}
       <Card>
         <div className="section-label" style={{ marginBottom: 10 }}>Skill coverage by category</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 12 }}>
-          {cov.map((c) => (
-            <div key={c.mode} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '12px 13px', background: 'var(--bg-elev)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <span style={{ fontWeight: 650, fontSize: 13 }}>{MODE_LABEL[c.mode]}</span>
-                <span style={{ fontSize: 12, color: c.completed === c.total ? 'var(--c-success)' : 'var(--t-2)', fontWeight: 600 }}>{c.completed}/{c.total}</span>
-              </div>
-              <div className="progress" style={{ margin: '8px 0' }}><div style={{ width: `${c.pct}%`, background: c.completed === c.total ? 'var(--c-success)' : 'var(--c-primary)' }} /></div>
-              <Button small onClick={() => practiceCategory(c.mode)}>
-                {c.completed === c.total ? 'Review →' : c.completed ? 'Continue →' : 'Start →'}
-              </Button>
-            </div>
-          ))}
-        </div>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
+          {cov.map((c) => {
+            const done = c.completed === c.total;
+            return (
+              <Paper key={c.mode} withBorder p="sm" radius="md">
+                <Group justify="space-between" align="baseline">
+                  <Text fw={650} size="sm">{MODE_LABEL[c.mode]}</Text>
+                  <Text size="xs" fw={600} c={done ? 'teal' : 'dimmed'}>{c.completed}/{c.total}</Text>
+                </Group>
+                <Progress value={c.pct} color={done ? 'teal' : 'brand'} size="sm" radius="xl" my="sm" />
+                <Button small onClick={() => practiceCategory(c.mode)}>
+                  {done ? 'Review →' : c.completed ? 'Continue →' : 'Start →'}
+                </Button>
+              </Paper>
+            );
+          })}
+        </SimpleGrid>
       </Card>
 
       {/* quick links */}
       <Card>
         <div className="section-label" style={{ marginBottom: 8 }}>Jump back in</div>
-        <div className="pill-row">
-          <Button onClick={() => openModule(MODULES[0].id)}>📚 Learning path</Button>
-          <Button onClick={() => setRoute('gym')}>🏋️ Practice Gym</Button>
-          <Button onClick={() => setRoute('mock')}>🎯 Mock interview</Button>
-          <Button onClick={() => setRoute('panic')}>🚑 Panic sheet</Button>
-        </div>
+        <Group gap="xs">
+          <Button leftSection={<IconBook2 size={16} />} onClick={() => openModule(MODULES[0].id)}>Learning path</Button>
+          <Button leftSection={<IconBarbell size={16} />} onClick={() => setRoute('gym')}>Practice Gym</Button>
+          <Button leftSection={<IconTargetArrow size={16} />} onClick={() => setRoute('mock')}>Mock interview</Button>
+          <Button leftSection={<IconLifebuoy size={16} />} onClick={() => setRoute('panic')}>Panic sheet</Button>
+        </Group>
       </Card>
     </div>
   );
