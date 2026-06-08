@@ -1,10 +1,21 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-mantine-color-scheme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stripe Interview Prep — Blended Technical Gym</title>
     <meta name="description" content="Sequential, problem-forward prep for a Stripe PhD/DS/MLE technical interview." />
+    <script>
+      // Apply the saved color scheme before paint to avoid a flash (default dark).
+      (function () {
+        try {
+          var v = localStorage.getItem('mantine-color-scheme-value') || 'dark';
+          document.documentElement.setAttribute('data-mantine-color-scheme', v === 'auto' ? 'dark' : v);
+        } catch (e) {
+          document.documentElement.setAttribute('data-mantine-color-scheme', 'dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

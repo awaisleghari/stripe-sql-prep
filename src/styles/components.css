@@ -167,6 +167,23 @@
 @keyframes cardIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .content-inner > div > * { animation: none; } }
 
+/* ---------- Light scheme overrides (dark-built pieces) ---------- */
+[data-mantine-color-scheme='light'] body {
+  background:
+    radial-gradient(1000px 560px at 84% -10%, rgba(84, 104, 232, 0.10), transparent 60%),
+    radial-gradient(820px 520px at -8% 8%, rgba(31, 158, 99, 0.07), transparent 55%),
+    radial-gradient(760px 620px at 55% 118%, rgba(150, 120, 240, 0.07), transparent 60%),
+    var(--bg-layout);
+}
+[data-mantine-color-scheme='light'] body::before { opacity: .55; }
+[data-mantine-color-scheme='light'] .app-sider { background: linear-gradient(180deg, #ffffff, #f4f7fc); }
+[data-mantine-color-scheme='light'] .app-topbar { background: rgba(255, 255, 255, 0.72); }
+[data-mantine-color-scheme='light'] .hero-title { background: linear-gradient(94deg, #1a2234 6%, #3f50c4 94%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+[data-mantine-color-scheme='light'] .grad-ring-pct { background: linear-gradient(120deg, #3a4ea0, #1f9e63); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+[data-mantine-color-scheme='light'] code.inline { color: #3f50c4; background: rgba(84, 104, 232, 0.10); border-color: rgba(84, 104, 232, 0.28); }
+[data-mantine-color-scheme='light'] .prose strong { color: #0f1626; }
+[data-mantine-color-scheme='light'] .grad-ring svg { filter: drop-shadow(0 3px 12px rgba(84, 104, 232, .28)); }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
   .shell { grid-template-columns: 1fr; }

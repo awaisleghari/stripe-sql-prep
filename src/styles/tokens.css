@@ -43,3 +43,37 @@
   --font: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
 }
+
+/* Light scheme — flips the palette; code blocks stay dark (see components.css). */
+[data-mantine-color-scheme='light'] {
+  --c-primary: #5468e8;
+  --c-primary-hover: #4a5cd8;
+  --c-primary-active: #3f50c4;
+  --c-primary-bg: rgba(84, 104, 232, 0.10);
+  --c-primary-border: rgba(84, 104, 232, 0.30);
+
+  --c-success: #1f9e63;
+  --c-warning: #b9852a;
+  --c-error: #db4f4a;
+  --c-geekblue: #4a63d8;
+  --c-volcano: #d8693f;
+  --c-gold: #b9852a;
+  --c-green: #1f9e63;
+
+  --bg: #ffffff;
+  --bg-elev: #ffffff;
+  --bg-layout: #eef1f7;
+  --fill: #f2f5fa;
+  --fill-2: #eaeef6;
+  --fill-3: #e2e8f2;
+  --border: #dde3ef;
+  --split: rgba(20, 30, 55, 0.08);
+
+  --t-1: #1a2234;
+  --t-2: #54617a;
+  --t-3: #7c8aa3;
+  --t-4: #a6b0c3;
+
+  --shadow-card: 0 1px 2px rgba(20, 30, 60, 0.05), 0 14px 32px -22px rgba(20, 30, 60, 0.22);
+  --shadow-pop: 0 18px 50px -14px rgba(20, 30, 60, 0.22);
+}

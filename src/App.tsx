@@ -27,7 +27,7 @@ export default function App() {
   const score = blendedReadiness(state, MODULES, PROBLEMS, MOCKS[0], rubricsById).overall;
 
   return (
-    <MantineProvider theme={theme} forceColorScheme="dark">
+    <MantineProvider theme={theme} defaultColorScheme="dark">
       <AppLayout route={state.route} readiness={score}>
         <Suspense fallback={<Center mih={260}><Loader color="brand" /></Center>}>
           {state.route === 'dashboard' && <Dashboard />}
