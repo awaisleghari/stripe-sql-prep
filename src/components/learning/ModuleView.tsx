@@ -26,6 +26,7 @@ import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Labeled } from '@/components/ui/Labeled';
 import { Button } from '@/components/ui/Button';
 import { SqlConsole } from '@/components/sql/SqlConsole';
+import { exerciseRunnable, overrideReason } from '@/sqlRunner/executable';
 import { wrapProse } from '@/utils/richText';
 
 const html = (s: string) => ({ __html: s });
@@ -287,7 +288,15 @@ function ExercisesTab({ m }: { m: Module }) {
                     </Accordion.Item>
                   </Accordion>
                 )}
-                {isSql && ex.solution && <SqlConsole solution={ex.solution} label="Run this drill — live Postgres sandbox" />}
+                {isSql && ex.solution && (
+                  exerciseRunnable(isSql, ex) ? (
+                    <SqlConsole solution={ex.solution} label="Run this drill — live Postgres sandbox" />
+                  ) : (
+                    <Alert variant="light" color="gray" mt="sm" radius="md" icon={<IconInfoCircle size={16} />}>
+                      Live sandbox is off for this drill: {overrideReason(ex.id) ?? 'it is conceptual.'}
+                    </Alert>
+                  )
+                )}
                 <Group mt="md">
                   <Button
                     small

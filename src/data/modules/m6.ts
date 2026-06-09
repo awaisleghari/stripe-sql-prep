@@ -108,9 +108,9 @@ export const m6: Module = {
       "prompt": "Rank merchants by gross payment volume (succeeded, USD only). Return merchant_id, gpv_usd, rank. Top 10.",
       "hints": [
         "Aggregate to GPV in a CTE, then RANK in the outer query.",
-        "Filter currency='USD' to keep cents comparable."
+        "Filter currency='usd' to keep cents comparable."
       ],
-      "solution": "WITH gpv AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges\n  WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id\n)\nSELECT merchant_id,\n       gross/100.0 AS gpv_usd,\n       RANK() OVER (ORDER BY gross DESC) AS rnk\nFROM gpv\nORDER BY rnk\nLIMIT 10;"
+      "solution": "WITH gpv AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges\n  WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id\n)\nSELECT merchant_id,\n       gross/100.0 AS gpv_usd,\n       RANK() OVER (ORDER BY gross DESC) AS rnk\nFROM gpv\nORDER BY rnk\nLIMIT 10;"
     },
     {
       "id": "m6e3",
@@ -133,7 +133,7 @@ export const m6: Module = {
         "First aggregate to monthly GPV in a CTE (DATE_TRUNC).",
         "LAG(gpv) OVER (PARTITION BY merchant_id ORDER BY month)."
       ],
-      "solution": "WITH m AS (\n  SELECT merchant_id,\n         DATE_TRUNC('month', created_at) AS month,\n         SUM(amount) AS gpv\n  FROM charges\n  WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id, DATE_TRUNC('month', created_at)\n)\nSELECT merchant_id, month, gpv/100.0 AS gpv_usd,\n       ROUND( (gpv - LAG(gpv) OVER (PARTITION BY merchant_id ORDER BY month))\n              ::numeric / NULLIF(LAG(gpv) OVER (PARTITION BY merchant_id ORDER BY month),0)\n              * 100, 1) AS mom_pct\nFROM m\nORDER BY merchant_id, month;"
+      "solution": "WITH m AS (\n  SELECT merchant_id,\n         DATE_TRUNC('month', created_at) AS month,\n         SUM(amount) AS gpv\n  FROM charges\n  WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id, DATE_TRUNC('month', created_at)\n)\nSELECT merchant_id, month, gpv/100.0 AS gpv_usd,\n       ROUND( (gpv - LAG(gpv) OVER (PARTITION BY merchant_id ORDER BY month))\n              ::numeric / NULLIF(LAG(gpv) OVER (PARTITION BY merchant_id ORDER BY month),0)\n              * 100, 1) AS mom_pct\nFROM m\nORDER BY merchant_id, month;"
     },
     {
       "id": "m6e5",
@@ -146,7 +146,7 @@ export const m6: Module = {
         "Use a window COUNT to get months-live per merchant.",
         "Threshold: mom_pct < -20."
       ],
-      "solution": "WITH m AS (\n  SELECT merchant_id,\n         DATE_TRUNC('month', created_at) AS month,\n         SUM(amount) AS gpv,\n         MIN(DATE_TRUNC('month', created_at)) OVER (PARTITION BY merchant_id) AS first_month\n  FROM charges\n  WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id, DATE_TRUNC('month', created_at)\n),\ngrowth AS (\n  SELECT merchant_id, month, gpv, first_month,\n         LAG(gpv) OVER (PARTITION BY merchant_id ORDER BY month) AS prev_gpv,\n         COUNT(*) OVER (PARTITION BY merchant_id) AS live_months\n  FROM m\n)\nSELECT merchant_id, month,\n       gpv/100.0 AS gpv_usd,\n       ROUND((gpv - prev_gpv)::numeric / NULLIF(prev_gpv,0) * 100, 1) AS mom_pct\nFROM growth\nWHERE live_months >= 6\n  AND prev_gpv IS NOT NULL\n  AND (gpv - prev_gpv)::numeric / NULLIF(prev_gpv,0) < -0.20\nORDER BY merchant_id, month;"
+      "solution": "WITH m AS (\n  SELECT merchant_id,\n         DATE_TRUNC('month', created_at) AS month,\n         SUM(amount) AS gpv,\n         MIN(DATE_TRUNC('month', created_at)) OVER (PARTITION BY merchant_id) AS first_month\n  FROM charges\n  WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id, DATE_TRUNC('month', created_at)\n),\ngrowth AS (\n  SELECT merchant_id, month, gpv, first_month,\n         LAG(gpv) OVER (PARTITION BY merchant_id ORDER BY month) AS prev_gpv,\n         COUNT(*) OVER (PARTITION BY merchant_id) AS live_months\n  FROM m\n)\nSELECT merchant_id, month,\n       gpv/100.0 AS gpv_usd,\n       ROUND((gpv - prev_gpv)::numeric / NULLIF(prev_gpv,0) * 100, 1) AS mom_pct\nFROM growth\nWHERE live_months >= 6\n  AND prev_gpv IS NOT NULL\n  AND (gpv - prev_gpv)::numeric / NULLIF(prev_gpv,0) < -0.20\nORDER BY merchant_id, month;"
     },
     {
       "id": "m6e6",
@@ -169,7 +169,7 @@ export const m6: Module = {
         "GPV CTE, then SUM(gross) OVER () gives the platform total.",
         "percent = 100 * gross / window total."
       ],
-      "solution": "WITH g AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id)\nSELECT merchant_id, gross/100.0 AS gpv_usd,\n  ROUND(100.0 * gross / SUM(gross) OVER (), 1) AS pct_of_total\nFROM g\nORDER BY gross DESC;"
+      "solution": "WITH g AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id)\nSELECT merchant_id, gross/100.0 AS gpv_usd,\n  ROUND(100.0 * gross / SUM(gross) OVER (), 1) AS pct_of_total\nFROM g\nORDER BY gross DESC;"
     },
     {
       "id": "m6e8",
@@ -181,7 +181,7 @@ export const m6: Module = {
         "Monthly GPV CTE with DATE_TRUNC.",
         "AVG(gross) OVER (PARTITION BY merchant ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)."
       ],
-      "solution": "WITH m AS (\n  SELECT merchant_id, DATE_TRUNC('month', created_at) AS month, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id, DATE_TRUNC('month', created_at))\nSELECT merchant_id, month, gross/100.0 AS gpv_usd,\n  ROUND(AVG(gross) OVER (PARTITION BY merchant_id ORDER BY month\n    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)/100.0, 2) AS rolling3_usd\nFROM m\nORDER BY merchant_id, month;"
+      "solution": "WITH m AS (\n  SELECT merchant_id, DATE_TRUNC('month', created_at) AS month, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id, DATE_TRUNC('month', created_at))\nSELECT merchant_id, month, gross/100.0 AS gpv_usd,\n  ROUND(AVG(gross) OVER (PARTITION BY merchant_id ORDER BY month\n    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)/100.0, 2) AS rolling3_usd\nFROM m\nORDER BY merchant_id, month;"
     }
   ],
   "quiz": [

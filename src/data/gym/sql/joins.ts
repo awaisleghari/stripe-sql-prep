@@ -448,7 +448,7 @@ export const joinsProblems: Problem[] = [
       "Aggregate each metric to merchant grain in its OWN CTE, then join.",
       "Never SUM charge amounts after a one-to-many refund join."
     ],
-    "solution": "WITH g AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id\n),\nr AS (\n  SELECT c.merchant_id, COUNT(*) AS refunds\n  FROM refunds rf JOIN charges c ON c.charge_id = rf.charge_id\n  GROUP BY c.merchant_id\n)\nSELECT g.merchant_id, g.gross/100.0 AS gpv_usd,\n       COALESCE(r.refunds,0) AS refunds\nFROM g LEFT JOIN r USING (merchant_id)\nORDER BY gpv_usd DESC;",
+    "solution": "WITH g AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id\n),\nr AS (\n  SELECT c.merchant_id, COUNT(*) AS refunds\n  FROM refunds rf JOIN charges c ON c.charge_id = rf.charge_id\n  GROUP BY c.merchant_id\n)\nSELECT g.merchant_id, g.gross/100.0 AS gpv_usd,\n       COALESCE(r.refunds,0) AS refunds\nFROM g LEFT JOIN r USING (merchant_id)\nORDER BY gpv_usd DESC;",
     "verify": {
       "grain": "One row per merchant with USD GPV.",
       "columns": [
@@ -540,7 +540,7 @@ export const joinsProblems: Problem[] = [
       "Three separate merchant-grain CTEs, then LEFT JOIN from merchants.",
       "Chaining charges→refunds→disputes fans out twice — corrupting both counts."
     ],
-    "solution": "WITH g AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id\n),\nr AS (\n  SELECT c.merchant_id, COUNT(*) AS refunds\n  FROM refunds rf JOIN charges c ON c.charge_id=rf.charge_id\n  GROUP BY c.merchant_id\n),\nd AS (\n  SELECT c.merchant_id, COUNT(*) AS disputes\n  FROM disputes dp JOIN charges c ON c.charge_id=dp.charge_id\n  GROUP BY c.merchant_id\n)\nSELECT m.merchant_id, m.name,\n       COALESCE(g.gross,0)/100.0 AS gpv_usd,\n       COALESCE(r.refunds,0) AS refunds,\n       COALESCE(d.disputes,0) AS disputes\nFROM merchants m\nLEFT JOIN g USING (merchant_id)\nLEFT JOIN r USING (merchant_id)\nLEFT JOIN d USING (merchant_id)\nORDER BY gpv_usd DESC;",
+    "solution": "WITH g AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id\n),\nr AS (\n  SELECT c.merchant_id, COUNT(*) AS refunds\n  FROM refunds rf JOIN charges c ON c.charge_id=rf.charge_id\n  GROUP BY c.merchant_id\n),\nd AS (\n  SELECT c.merchant_id, COUNT(*) AS disputes\n  FROM disputes dp JOIN charges c ON c.charge_id=dp.charge_id\n  GROUP BY c.merchant_id\n)\nSELECT m.merchant_id, m.name,\n       COALESCE(g.gross,0)/100.0 AS gpv_usd,\n       COALESCE(r.refunds,0) AS refunds,\n       COALESCE(d.disputes,0) AS disputes\nFROM merchants m\nLEFT JOIN g USING (merchant_id)\nLEFT JOIN r USING (merchant_id)\nLEFT JOIN d USING (merchant_id)\nORDER BY gpv_usd DESC;",
     "verify": {
       "grain": "One row per merchant (all merchants).",
       "columns": [

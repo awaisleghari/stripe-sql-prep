@@ -3,4 +3,7 @@
 export { runSql, getDb } from './engine';
 export { compareResults, looksOrdered } from './compareResults';
 export { displayCell } from './normalizeResults';
-export type { RunResult, Comparison, Cell } from './normalizeResults';
+export { REFERENCE_NOW } from './seedDatabase';
+export { explainError } from './feedback';
+export type { RunResult, Comparison, ComparisonKind, Cell } from './normalizeResults';
+export type { ErrorExplanation, ErrorCategory } from './feedback';

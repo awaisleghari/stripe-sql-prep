@@ -24,7 +24,7 @@ export const MOCK1: Mock = {
       "kind": "Multi-step metric",
       "rubric": "sql",
       "prompt": "Rank merchants by GPV (succeeded, USD). Return rank, merchant, gpv_usd. Top 5.",
-      "solution": "WITH gpv AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id\n)\nSELECT RANK() OVER (ORDER BY gross DESC) AS rnk,\n       merchant_id, gross/100.0 AS gpv_usd\nFROM gpv ORDER BY rnk LIMIT 5;",
+      "solution": "WITH gpv AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id\n)\nSELECT RANK() OVER (ORDER BY gross DESC) AS rnk,\n       merchant_id, gross/100.0 AS gpv_usd\nFROM gpv ORDER BY rnk LIMIT 5;",
       "notes": [
         "GPV in a CTE, then RANK.",
         "RANK vs ROW_NUMBER: ties should share.",

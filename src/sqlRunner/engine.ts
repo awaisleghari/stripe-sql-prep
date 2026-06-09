@@ -57,6 +57,6 @@ export async function runSql(sql: string): Promise<RunResult> {
     return normalizeResult(res, Math.round(now() - start));
   } catch (e) {
     const error = msg(e);
-    return empty({ elapsedMs: Math.round(now() - start), error, hint: explainError(error) });
+    return empty({ elapsedMs: Math.round(now() - start), error, explain: explainError(error) });
   }
 }

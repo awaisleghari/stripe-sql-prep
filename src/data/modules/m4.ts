@@ -172,7 +172,7 @@ export const m4: Module = {
         "Aggregate GPV and refunds in separate CTEs at merchant grain.",
         "LEFT JOIN them; COALESCE refunds to 0."
       ],
-      "solution": "WITH g AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id),\nr AS (\n  SELECT c.merchant_id, COUNT(*) AS refunds\n  FROM refunds rf JOIN charges c ON c.charge_id = rf.charge_id\n  GROUP BY c.merchant_id)\nSELECT g.merchant_id, g.gross/100.0 AS gpv_usd, COALESCE(r.refunds,0) AS refunds\nFROM g LEFT JOIN r USING (merchant_id)\nORDER BY gpv_usd DESC;"
+      "solution": "WITH g AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id),\nr AS (\n  SELECT c.merchant_id, COUNT(*) AS refunds\n  FROM refunds rf JOIN charges c ON c.charge_id = rf.charge_id\n  GROUP BY c.merchant_id)\nSELECT g.merchant_id, g.gross/100.0 AS gpv_usd, COALESCE(r.refunds,0) AS refunds\nFROM g LEFT JOIN r USING (merchant_id)\nORDER BY gpv_usd DESC;"
     }
   ],
   "quiz": [

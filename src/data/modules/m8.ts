@@ -83,7 +83,7 @@ export const m8: Module = {
         "Dedup to the succeeded row per key (rn=1 over succeeded rows).",
         "Then SUM that amount."
       ],
-      "solution": "WITH dedup AS (\n  SELECT idempotency_key, amount,\n         ROW_NUMBER() OVER (PARTITION BY idempotency_key\n                            ORDER BY created_at DESC, charge_id DESC) rn\n  FROM charges\n  WHERE merchant_id=107 AND status='succeeded' AND currency='USD'\n)\nSELECT SUM(amount)/100.0 AS gpv_usd\nFROM dedup\nWHERE rn=1;"
+      "solution": "WITH dedup AS (\n  SELECT idempotency_key, amount,\n         ROW_NUMBER() OVER (PARTITION BY idempotency_key\n                            ORDER BY created_at DESC, charge_id DESC) rn\n  FROM charges\n  WHERE merchant_id=107 AND status='succeeded' AND currency='usd'\n)\nSELECT SUM(amount)/100.0 AS gpv_usd\nFROM dedup\nWHERE rn=1;"
     },
     {
       "id": "m8e4",
@@ -107,7 +107,7 @@ export const m8: Module = {
         "Order the ROW_NUMBER by status preference first, then recency.",
         "Handle NULL idempotency_key separately (UNION ALL) so they aren't all collapsed."
       ],
-      "solution": "WITH ranked AS (\n  SELECT *,\n         ROW_NUMBER() OVER (\n           PARTITION BY idempotency_key\n           ORDER BY (status='succeeded') DESC,   -- prefer a succeeded row\n                    created_at DESC, charge_id DESC) AS rn\n  FROM charges\n  WHERE idempotency_key IS NOT NULL\n),\nclean AS (\n  SELECT * FROM ranked WHERE rn = 1\n  UNION ALL\n  SELECT *, 1 AS rn FROM charges WHERE idempotency_key IS NULL  -- keep keyless rows as-is\n)\nSELECT merchant_id,\n       COUNT(*) FILTER (WHERE status='succeeded') AS clean_succeeded,\n       SUM(amount) FILTER (WHERE status='succeeded' AND currency='USD')/100.0 AS clean_gpv_usd\nFROM clean\nGROUP BY merchant_id\nORDER BY clean_gpv_usd DESC NULLS LAST;"
+      "solution": "WITH ranked AS (\n  SELECT *,\n         ROW_NUMBER() OVER (\n           PARTITION BY idempotency_key\n           ORDER BY (status='succeeded') DESC,   -- prefer a succeeded row\n                    created_at DESC, charge_id DESC) AS rn\n  FROM charges\n  WHERE idempotency_key IS NOT NULL\n),\nclean AS (\n  SELECT * FROM ranked WHERE rn = 1\n  UNION ALL\n  SELECT *, 1 AS rn FROM charges WHERE idempotency_key IS NULL  -- keep keyless rows as-is\n)\nSELECT merchant_id,\n       COUNT(*) FILTER (WHERE status='succeeded') AS clean_succeeded,\n       SUM(amount) FILTER (WHERE status='succeeded' AND currency='usd')/100.0 AS clean_gpv_usd\nFROM clean\nGROUP BY merchant_id\nORDER BY clean_gpv_usd DESC NULLS LAST;"
     }
   ],
   "quiz": [

@@ -25,10 +25,21 @@ function mulberry32(seed: number) {
 
 const SEED = 0x5713c0de;
 
+/*
+ * Fixed reference instant the whole sandbox is frozen to. Every seed timestamp is a literal
+ * offset from this value, and Postgres `now()` is shadowed (see the finalize block) to return
+ * it — so the 124 existing `NOW()` gold solutions stay verbatim yet become fully deterministic,
+ * and the audit can assert exact, reproducible outputs. No wall-clock time enters the sandbox.
+ */
+// Mid-month, mid-day: "current calendar month" queries (DATE_TRUNC('month', now())) then have ~2
+// weeks of in-month data, and every spike lands inside a single UTC day far from any boundary.
+export const REFERENCE_NOW = '2024-07-15 12:00:00+00';
+const REF = `TIMESTAMPTZ '${REFERENCE_NOW}'`;
+
 /* ---- SQL value helpers ---- */
 const q = (s: string) => `'${s.replace(/'/g, "''")}'`;
-const ts = (hoursAgo: number) => `now() - interval '${Math.max(1, Math.round(hoursAgo))} hours'`;
-const dt = (hoursAgo: number) => `(now() - interval '${Math.max(1, Math.round(hoursAgo))} hours')::date`;
+const ts = (hoursAgo: number) => `${REF} - interval '${Math.max(1, Math.round(hoursAgo))} hours'`;
+const dt = (hoursAgo: number) => `(${REF} - interval '${Math.max(1, Math.round(hoursAgo))} hours')::date`;
 
 /* ---- categorical pools ---- */
 const COUNTRIES = ['US', 'US', 'US', 'GB', 'CA', 'AU', 'DE', 'FR', 'IN', 'SG'];
@@ -42,12 +53,21 @@ const SUB_STATUS = ['active', 'active', 'active', 'canceled', 'past_due', 'trial
 const INVOICE_STATUS = ['paid', 'paid', 'paid', 'open', 'void', 'uncollectible'];
 const PLAN_IDS = ['basic_m', 'pro_m', 'scale_m', 'basic_y', 'pro_y'];
 const MCC = ['5045', '5732', '5812', '7372', '5999', '8999'];
-const AMOUNTS = [999, 1500, 1999, 2500, 2999, 4999, 5000, 7900, 9900, 12000, 19900, 25000];
+// Cents. Spread spans small to large ($10–$2500) so threshold filters (e.g. "over $500") return rows.
+const AMOUNTS = [999, 1500, 1999, 2999, 4999, 7900, 9900, 19900, 29900, 49900, 75000, 120000, 250000];
 
 /* ---- volume knobs (tuned so boot stays ~2s while floors/anomalies are demonstrable) ---- */
+// Merchant ids are 101..(100+N) so they match the IDs the curriculum filters on (merchant_id=101..107).
+const MERCHANT_BASE = 100;
 const N_MERCHANTS = 25;
 const N_ACCOUNTS = 12;
 const N_CUSTOMERS = 1200;
+// A few "large" merchants get ~half the customers so they clear the curriculum's high-volume
+// thresholds (>500 attempts/30d, >=1000 total). Reserved tail customers belong to merchant 105
+// and are never charged, so the anti-join drills ("customers with no succeeded charge") return rows.
+const BIG_MERCHANTS = [101, 102, 105, 107];
+const RESERVED_INACTIVE = 40;
+const ACTIVE_MAX = N_CUSTOMERS - RESERVED_INACTIVE;
 const RECENT_DAYS = 60;      // dense window the rolling-metric queries operate over
 const RECENT_PER_DAY = 140;
 const OLDER_DAYS = 340;      // sparse long tail for 12-month lookbacks (retention/revenue)
@@ -78,23 +98,25 @@ CREATE TABLE payouts (payout_id BIGINT PRIMARY KEY, merchant_id BIGINT, amount B
 CREATE TABLE experiment_exposures (exposure_id BIGINT PRIMARY KEY, customer_id BIGINT, experiment TEXT, variant TEXT, exposed_at TIMESTAMPTZ);
 `;
 
-  /* ---- merchants ---- */
+  /* ---- merchants (ids 101..125) ---- */
   const merchants: string[] = [];
   for (let i = 1; i <= N_MERCHANTS; i++) {
-    merchants.push(`(${i}, ${q('Merchant ' + i)}, ${q(pick(COUNTRIES))}, ${q(pick(MCC))}, ${ts(randInt(400, 900) * 24)}, ${i <= 4})`);
+    const id = MERCHANT_BASE + i;
+    merchants.push(`(${id}, ${q('Merchant ' + id)}, ${q(pick(COUNTRIES))}, ${q(pick(MCC))}, ${ts(randInt(400, 900) * 24)}, ${i <= 4})`);
   }
 
-  /* ---- connected accounts (under the platform merchants 1..4) ---- */
+  /* ---- connected accounts (under the platform merchants 101..104) ---- */
   const accounts: string[] = [];
   for (let i = 1; i <= N_ACCOUNTS; i++) {
-    accounts.push(`(${i}, ${randInt(1, 4)}, ${q(pick(COUNTRIES))}, ${ts(randInt(100, 600) * 24)}, ${chance(0.9)}, ${chance(0.8)})`);
+    accounts.push(`(${i}, ${MERCHANT_BASE + randInt(1, 4)}, ${q(pick(COUNTRIES))}, ${ts(randInt(100, 600) * 24)}, ${chance(0.9)}, ${chance(0.8)})`);
   }
 
   /* ---- customers (each scoped to a merchant) ---- */
   const customers: string[] = [];
   const custMerchant: number[] = [0]; // 1-indexed
   for (let i = 1; i <= N_CUSTOMERS; i++) {
-    const m = randInt(1, N_MERCHANTS);
+    // reserved tail → merchant 105 (never charged); otherwise half to big merchants, half uniform
+    const m = i > ACTIVE_MAX ? 105 : chance(0.5) ? BIG_MERCHANTS[randInt(0, 3)] : MERCHANT_BASE + randInt(1, N_MERCHANTS);
     custMerchant[i] = m;
     const signupDaysAgo = randInt(1, 400);
     customers.push(`(${i}, ${m}, ${q('c' + i + '@example.com')}, ${q(pick(COUNTRIES))}, ${ts(signupDaysAgo * 24)})`);
@@ -106,7 +128,7 @@ CREATE TABLE experiment_exposures (exposure_id BIGINT PRIMARY KEY, customer_id B
   let chargeId = 0;
   const addCharge = (daysAgo: number, opts: { forceStatus?: string; forceFailureCode?: string; customerId?: number; hoursAgo?: number } = {}): ChargeRow => {
     chargeId++;
-    const customerId = opts.customerId ?? randInt(1, N_CUSTOMERS);
+    const customerId = opts.customerId ?? randInt(1, ACTIVE_MAX); // never auto-charge reserved customers
     const merchantId = custMerchant[customerId];
     const amount = pick(AMOUNTS) + randInt(0, 400);
     let status = opts.forceStatus;
@@ -117,7 +139,8 @@ CREATE TABLE experiment_exposures (exposure_id BIGINT PRIMARY KEY, customer_id B
     const hoursAgo = opts.hoursAgo ?? daysAgo * 24 - randInt(0, 23);
     const row: ChargeRow = { id: chargeId, merchantId, customerId, amount, status, hoursAgo };
     charges.push(row);
-    const failureCode = status === 'failed' ? opts.forceFailureCode ?? pick(FAILURE_CODES) : null;
+    // ~6% of failed charges have no failure_code (a data-quality scenario the curriculum drills)
+    const failureCode = status === 'failed' ? (opts.forceFailureCode ?? (chance(0.94) ? pick(FAILURE_CODES) : null)) : null;
     const captured = status === 'succeeded';
     chargeValues.push(
       `(${chargeId}, ${merchantId}, ${customerId}, ${amount}, ${q(pick(CURRENCIES))}, ${q(status)}, ${captured}, ${q(pick(PAYMENT_METHODS))}, ${q(pick(COUNTRIES))}, ${failureCode ? q(failureCode) : 'NULL'}, ${q('idem_' + chargeId)}, ${ts(hoursAgo)})`
@@ -133,17 +156,35 @@ CREATE TABLE experiment_exposures (exposure_id BIGINT PRIMARY KEY, customer_id B
   // from either midnight boundary) so the whole spike lands in ONE DATE_TRUNC day bucket
   // regardless of the wall-clock time the sandbox boots; the z-score then spikes hard.
   const band = (day: number) => day * 24 - 12;
+  const customersOf = (mid: number) => {
+    const ids: number[] = [];
+    for (let i = 1; i <= ACTIVE_MAX; i++) if (custMerchant[i] === mid) ids.push(i);
+    return ids;
+  };
+  const m107 = customersOf(107);
+  const m105 = customersOf(105);
+  const pickFrom = (ids: number[]) => ids[randInt(0, ids.length - 1)];
+
   for (let k = 0; k < 80; k++) addCharge(8, { forceStatus: 'failed', hoursAgo: band(8) });            // failure-count spike, ~8 days ago
   for (let k = 0; k < 65; k++) addCharge(12, { forceStatus: 'failed', forceFailureCode: 'card_declined', hoursAgo: band(12) }); // failure-code spike, ~12 days ago
+  // dispute-rate spike concentrated on merchant 107 (clears the 200-volume floor AND lifts 107's
+  // trailing-30d dispute rate over its 90d baseline for the per-merchant emerging-fraud drills)
   const day6Charges: ChargeRow[] = [];
-  for (let k = 0; k < 220; k++) day6Charges.push(addCharge(6, { forceStatus: 'succeeded', hoursAgo: band(6) })); // dispute-rate spike: volume over the 200 floor
+  for (let k = 0; k < 220; k++) day6Charges.push(addCharge(6, { forceStatus: 'succeeded', hoursAgo: band(6), customerId: pickFrom(m107) }));
+  // merchant 105: one dominant failure_code so the "top failure reason share" drills flag it
+  for (let k = 0; k < 180; k++) addCharge(randInt(1, 28), { forceStatus: 'failed', forceFailureCode: 'card_declined', customerId: pickFrom(m105) });
+  // merchant 107: a long CLEAN history (days 31-88, no disputes) so its trailing-90d dispute-rate
+  // baseline is low; the recent day-6 burst then lifts its 30d rate above 2x baseline (wn8/rf8/m12e5).
+  for (let k = 0; k < 1200; k++) addCharge(randInt(31, 88), { forceStatus: 'succeeded', customerId: pickFrom(m107) });
 
-  // a few duplicate idempotency keys (retry storms) for dedup-style queries
+  // Duplicate idempotency keys (retry storms) for dedup-style queries. Concentrated on merchant 107
+  // because the m8 dedup curriculum filters merchant_id=107, plus a few elsewhere.
+  const dupPool = charges.filter((c) => c.merchantId === MERCHANT_BASE + 7);
   for (let k = 0; k < 30; k++) {
     chargeId++;
-    const src = charges[randInt(0, charges.length - 1)];
+    const src = (k < 22 && dupPool.length ? dupPool : charges)[randInt(0, (k < 22 && dupPool.length ? dupPool : charges).length - 1)];
     chargeValues.push(
-      `(${chargeId}, ${src.merchantId}, ${src.customerId}, ${src.amount}, 'usd', 'succeeded', true, 'card', 'US', NULL, ${q('idem_' + src.id)}, ${ts(src.hoursAgo - 1)})`
+      `(${chargeId}, ${src.merchantId}, ${src.customerId}, ${src.amount}, 'usd', 'succeeded', true, 'card', 'US', NULL, ${q('idem_' + src.id)}, ${ts(Math.max(1, src.hoursAgo - 1))})`
     );
   }
 
@@ -166,8 +207,10 @@ CREATE TABLE experiment_exposures (exposure_id BIGINT PRIMARY KEY, customer_id B
     disputes.push(`(${disputeId}, ${c.id}, ${c.amount}, ${q(pick(DISPUTE_REASONS))}, ${q(pick(DISPUTE_STATUS))}, ${ts(Math.max(1, c.hoursAgo - randInt(48, 480)))})`);
   };
   for (const c of charges) if (c.status === 'succeeded' && chance(0.012)) addDispute(c);
-  // spike: dispute a chunk of the clustered day -6 succeeded charges (an5 buckets by charge day)
-  for (let i = 0; i < 30 && i < day6Charges.length; i++) addDispute(day6Charges[i]);
+  // spike: dispute a large chunk of merchant 107's clustered day -6 charges. This drives both the
+  // platform dispute-rate anomaly (an5) AND merchant 107's trailing-30d rate above 2x its 90d
+  // baseline (the per-merchant emerging-fraud drills wn8/rf8/m12e5), since the 90d window dilutes it.
+  for (let i = 0; i < 100 && i < day6Charges.length; i++) addDispute(day6Charges[i]);
 
   /* ---- subscriptions ---- */
   const subscriptions: string[] = [];
@@ -213,7 +256,8 @@ CREATE TABLE experiment_exposures (exposure_id BIGINT PRIMARY KEY, customer_id B
   /* ---- payouts (weekly per merchant) + their ledger rows ---- */
   const payouts: string[] = [];
   let payoutId = 0;
-  for (let m = 1; m <= N_MERCHANTS; m++) {
+  for (let mi = 1; mi <= N_MERCHANTS; mi++) {
+    const m = MERCHANT_BASE + mi;
     for (let w = 0; w < 12; w++) {
       payoutId++;
       const amount = randInt(50000, 800000);
@@ -232,7 +276,7 @@ CREATE TABLE experiment_exposures (exposure_id BIGINT PRIMARY KEY, customer_id B
   // assign ~2000 distinct customers; reuse customer ids (some repeats are fine, dedup by query)
   const assignCount = 2000;
   for (let i = 0; i < assignCount; i++) {
-    const customerId = randInt(1, N_CUSTOMERS);
+    const customerId = randInt(1, ACTIVE_MAX); // don't convert (and thus reactivate) reserved customers
     if (exposedCustomers.has(customerId)) continue;
     exposedCustomers.add(customerId);
     const variant = chance(0.5) ? 'control' : 'treatment';
@@ -289,6 +333,16 @@ CREATE INDEX idx_sub_merchant ON subscriptions(merchant_id);
 CREATE INDEX idx_customers_merchant ON customers(merchant_id);
 ANALYZE;`;
 
+  /* Freeze `now()` to REFERENCE_NOW. A custom sandbox.now() shadows pg_catalog.now() because the
+     search_path lists pg_catalog LAST (Postgres allows user names to override built-ins this way).
+     Only the name `now` is shadowed; every other built-in still resolves from pg_catalog. This is
+     what makes the 124 NOW()-based gold solutions deterministic without touching the curriculum. */
+  const finalize = `
+SET TIME ZONE 'UTC';
+CREATE SCHEMA sandbox;
+CREATE FUNCTION sandbox.now() RETURNS timestamptz LANGUAGE sql IMMUTABLE AS $$ SELECT ${REF} $$;
+SET search_path TO sandbox, public, pg_catalog;`;
+
   return [
     ddl,
     insertBatched('merchants', 'merchant_id, name, country, mcc, created_at, is_platform', merchants),
@@ -303,6 +357,7 @@ ANALYZE;`;
     insertBatched('payouts', 'payout_id, merchant_id, amount, status, arrival_date, created_at', payouts),
     insertBatched('experiment_exposures', 'exposure_id, customer_id, experiment, variant, exposed_at', exposures),
     indexes,
+    finalize,
   ].join('\n');
 }
 

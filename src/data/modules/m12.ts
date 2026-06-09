@@ -116,7 +116,7 @@ export const m12: Module = {
         "Filter status='lost'.",
         "Loss = disputed amount + $15 fee (1500 cents) per dispute."
       ],
-      "solution": "SELECT c.merchant_id,\n       (SUM(d.amount) + COUNT(*) * 1500) / 100.0 AS dispute_loss_usd\nFROM disputes d\nJOIN charges c ON c.charge_id = d.charge_id\nWHERE d.status='lost' AND c.currency='USD'\nGROUP BY c.merchant_id\nORDER BY dispute_loss_usd DESC;"
+      "solution": "SELECT c.merchant_id,\n       (SUM(d.amount) + COUNT(*) * 1500) / 100.0 AS dispute_loss_usd\nFROM disputes d\nJOIN charges c ON c.charge_id = d.charge_id\nWHERE d.status='lost' AND c.currency='usd'\nGROUP BY c.merchant_id\nORDER BY dispute_loss_usd DESC;"
     },
     {
       "id": "m12e5",
@@ -163,7 +163,7 @@ export const m12: Module = {
         "Filter status='lost'.",
         "Loss = SUM(amount) + COUNT(*) * 1500 cents."
       ],
-      "solution": "SELECT c.merchant_id,\n  (SUM(d.amount) + COUNT(*) * 1500)/100.0 AS loss_usd\nFROM disputes d\nJOIN charges c ON c.charge_id = d.charge_id\nWHERE d.status='lost' AND c.currency='USD'\nGROUP BY c.merchant_id\nORDER BY loss_usd DESC;"
+      "solution": "SELECT c.merchant_id,\n  (SUM(d.amount) + COUNT(*) * 1500)/100.0 AS loss_usd\nFROM disputes d\nJOIN charges c ON c.charge_id = d.charge_id\nWHERE d.status='lost' AND c.currency='usd'\nGROUP BY c.merchant_id\nORDER BY loss_usd DESC;"
     }
   ],
   "quiz": [

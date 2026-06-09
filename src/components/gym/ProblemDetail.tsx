@@ -11,6 +11,7 @@ import { Collapse } from '@/components/ui/Collapse';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Labeled } from '@/components/ui/Labeled';
 import { SqlConsole } from '@/components/sql/SqlConsole';
+import { problemRunnable, overrideReason } from '@/sqlRunner/executable';
 
 function List({ items }: { items: string[] }) {
   return (
@@ -53,7 +54,15 @@ export function ProblemDetail({ problem: p }: { problem: Problem }) {
         {p.signature && <CodeBlock>{p.signature}</CodeBlock>}
       </div>
 
-      {isSql && p.solution && <SqlConsole solution={p.solution} starter={p.broken ?? ''} />}
+      {isSql && p.solution && (
+        problemRunnable(p) ? (
+          <SqlConsole solution={p.solution} starter={p.broken ?? ''} />
+        ) : (
+          <Callout variant="tip" title="✋ Live sandbox is off for this drill">
+            {overrideReason(p.id) ?? 'This problem is conceptual — work it through on paper.'}
+          </Callout>
+        )
+      )}
 
       {p.broken && <Labeled label={`🛠 Broken ${isSql ? 'query' : 'code'} to diagnose`}><CodeBlock>{p.broken}</CodeBlock></Labeled>}
       {p.confusion && <Callout variant="confusion" title="⚠ Common confusion"><span dangerouslySetInnerHTML={{ __html: p.confusion }} /></Callout>}

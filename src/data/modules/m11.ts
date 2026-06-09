@@ -81,7 +81,7 @@ export const m11: Module = {
       "hints": [
         "SUM(amount)/100.0 with status + currency filters."
       ],
-      "solution": "SELECT SUM(amount)/100.0 AS gpv_usd\nFROM charges\nWHERE merchant_id=102 AND status='succeeded' AND currency='USD';"
+      "solution": "SELECT SUM(amount)/100.0 AS gpv_usd\nFROM charges\nWHERE merchant_id=102 AND status='succeeded' AND currency='usd';"
     },
     {
       "id": "m11e2",
@@ -129,7 +129,7 @@ export const m11: Module = {
         "Aggregate GPV, net, MRR in SEPARATE CTEs at merchant grain, then LEFT JOIN — never join the raw tables (triple fan-out).",
         "NULLIF guards margin; COALESCE MRR to 0."
       ],
-      "solution": "WITH gpv AS (\n  SELECT merchant_id, SUM(amount) AS gpv\n  FROM charges WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id\n),\nnet AS (\n  SELECT merchant_id, SUM(net_amount) AS net\n  FROM balance_transactions WHERE currency='usd'\n  GROUP BY merchant_id\n),\nmrr AS (\n  SELECT merchant_id,\n         SUM(CASE WHEN interval='year' THEN amount/12.0 ELSE amount END) AS mrr\n  FROM subscriptions WHERE status IN ('active','past_due')\n  GROUP BY merchant_id\n)\nSELECT m.merchant_id, m.name,\n       g.gpv/100.0 AS gpv_usd,\n       n.net/100.0 AS net_usd,\n       ROUND(n.net::numeric / NULLIF(g.gpv,0), 3) AS net_margin,\n       COALESCE(r.mrr,0)/100.0 AS mrr_usd\nFROM merchants m\nLEFT JOIN gpv g USING (merchant_id)\nLEFT JOIN net n USING (merchant_id)\nLEFT JOIN mrr r USING (merchant_id)\nWHERE g.gpv IS NOT NULL\nORDER BY net_usd DESC NULLS LAST;"
+      "solution": "WITH gpv AS (\n  SELECT merchant_id, SUM(amount) AS gpv\n  FROM charges WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id\n),\nnet AS (\n  SELECT merchant_id, SUM(net_amount) AS net\n  FROM balance_transactions WHERE currency='usd'\n  GROUP BY merchant_id\n),\nmrr AS (\n  SELECT merchant_id,\n         SUM(CASE WHEN interval='year' THEN amount/12.0 ELSE amount END) AS mrr\n  FROM subscriptions WHERE status IN ('active','past_due')\n  GROUP BY merchant_id\n)\nSELECT m.merchant_id, m.name,\n       g.gpv/100.0 AS gpv_usd,\n       n.net/100.0 AS net_usd,\n       ROUND(n.net::numeric / NULLIF(g.gpv,0), 3) AS net_margin,\n       COALESCE(r.mrr,0)/100.0 AS mrr_usd\nFROM merchants m\nLEFT JOIN gpv g USING (merchant_id)\nLEFT JOIN net n USING (merchant_id)\nLEFT JOIN mrr r USING (merchant_id)\nWHERE g.gpv IS NOT NULL\nORDER BY net_usd DESC NULLS LAST;"
     },
     {
       "id": "m11e6",
@@ -152,7 +152,7 @@ export const m11: Module = {
         "GPV from a charges CTE, net from a ledger CTE, then join.",
         "Guard the division with NULLIF."
       ],
-      "solution": "WITH g AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id),\nn AS (\n  SELECT merchant_id, SUM(net_amount) AS net\n  FROM balance_transactions WHERE currency='usd'\n  GROUP BY merchant_id)\nSELECT g.merchant_id, g.gross/100.0 AS gpv_usd, n.net/100.0 AS net_usd,\n  ROUND(n.net::numeric / NULLIF(g.gross,0), 3) AS net_margin\nFROM g JOIN n USING (merchant_id)\nORDER BY gpv_usd DESC;"
+      "solution": "WITH g AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id),\nn AS (\n  SELECT merchant_id, SUM(net_amount) AS net\n  FROM balance_transactions WHERE currency='usd'\n  GROUP BY merchant_id)\nSELECT g.merchant_id, g.gross/100.0 AS gpv_usd, n.net/100.0 AS net_usd,\n  ROUND(n.net::numeric / NULLIF(g.gross,0), 3) AS net_margin\nFROM g JOIN n USING (merchant_id)\nORDER BY gpv_usd DESC;"
     },
     {
       "id": "m11e8",

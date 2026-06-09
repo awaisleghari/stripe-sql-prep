@@ -76,7 +76,7 @@ export const revenueProblems: Problem[] = [
     "hints": [
       "SUM(amount)/100.0 with status and currency filters."
     ],
-    "solution": "SELECT SUM(amount)/100.0 AS gpv_usd\nFROM charges\nWHERE merchant_id=102 AND status='succeeded' AND currency='USD';",
+    "solution": "SELECT SUM(amount)/100.0 AS gpv_usd\nFROM charges\nWHERE merchant_id=102 AND status='succeeded' AND currency='usd';",
     "grain": "A single scalar (one merchant, one currency).",
     "explain": "Explain why this is GROSS, not revenue.",
     "teaches": "GPV = SUM of succeeded amounts, in the right units.",

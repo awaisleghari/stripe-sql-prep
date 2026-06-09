@@ -1,4 +1,5 @@
 /* Turn PGlite's row-objects into a column/row grid with display-stable cells. */
+import type { ErrorExplanation } from './feedback';
 
 export type Cell = string | number | boolean | null;
 
@@ -9,10 +10,17 @@ export type RunResult = {
   rowCount: number;
   elapsedMs: number;
   error?: string;
-  hint?: string;
+  explain?: ErrorExplanation;
 };
 
-export type Comparison = { match: boolean; reason: string };
+export type ComparisonKind = 'match' | 'col_count' | 'row_count' | 'value' | 'user_error';
+
+export type Comparison = {
+  match: boolean;
+  reason: string;
+  kind?: ComparisonKind;
+  note?: string; // soft, non-blocking (e.g. row order differs but values match)
+};
 
 type PGResult = { rows: Array<Record<string, unknown>>; fields: Array<{ name: string }> };
 

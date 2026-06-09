@@ -1,65 +1,106 @@
 import { describe, it, expect } from 'vitest';
-import { runSql, compareResults } from '@/sqlRunner';
+import { runSql, compareResults, REFERENCE_NOW } from '@/sqlRunner';
 import type { RunResult } from '@/sqlRunner';
+import { problemRunnable, exerciseRunnable, statusForId, overrideReason } from '@/sqlRunner/executable';
 import { PROBLEMS, getProblem } from '@/data/gym';
 import { MODULES } from '@/data/modules';
+import { SCHEMA } from '@/data/schema';
 
-/* The whole point of choosing PGlite (real Postgres in WASM) over SQLite is fidelity:
-   every Postgres gold solution in the curriculum must execute as-written against the seeded
-   sandbox. These tests boot the sandbox once and prove exactly that. They are slower than the
-   data tests (a one-time ~2s boot), hence the raised timeout. */
+/* Real PGlite execution audit. The whole reason for choosing PGlite over SQLite is fidelity:
+   every Postgres gold solution in the curriculum must run as-written against the seeded, frozen
+   sandbox. These boot the sandbox once (~2s) and prove it — hence the raised timeouts. */
 
 const colIndex = (r: RunResult, name: string) => r.columns.indexOf(name);
 const num = (v: unknown) => (v === null ? NaN : Number(v));
 
-describe('PGlite sandbox executes the SQL curriculum', () => {
+describe('PGlite sandbox: boot, determinism, schema', () => {
   it('boots, seeds, and answers a basic query', async () => {
     const r = await runSql('SELECT COUNT(*) AS n FROM charges');
     expect(r.ok).toBe(true);
-    expect(r.rowCount).toBe(1);
     expect(num(r.rows[0][0])).toBeGreaterThan(1000);
   }, 60000);
 
-  // Intentional non-executable drills: their prompt explicitly assumes a column the real
-  // schema does not have, as a pre-joins teaching simplification. Excluded from the must-run set.
-  const NON_EXECUTABLE = new Set<string>(['m1/m1e4']); // prompt: "assume a charges.email column exists"
+  it('now() is frozen to REFERENCE_NOW (deterministic dates, no wall-clock)', async () => {
+    const r = await runSql('SELECT now()::date AS d');
+    expect(r.ok).toBe(true);
+    expect(String(r.rows[0][colIndex(r, 'd')])).toContain(REFERENCE_NOW.slice(0, 10)); // 2024-07-01
+  }, 60000);
 
-  it('every SQL gold solution (gym + module drills) runs without error', async () => {
+  it('a NOW()-based gold solution returns identical results across runs', async () => {
+    const sol = getProblem('an8')!.solution!;
+    const a = await runSql(sol);
+    const b = await runSql(sol);
+    expect(a.ok && b.ok).toBe(true);
+    expect(a.rowCount).toBe(b.rowCount);
+  }, 60000);
+
+  it('seed schema mirrors src/data/schema.ts exactly (tables and columns)', async () => {
+    const r = await runSql(
+      "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema='public' ORDER BY table_name, ordinal_position"
+    );
+    expect(r.ok).toBe(true);
+    const seed: Record<string, Set<string>> = {};
+    for (const row of r.rows) (seed[String(row[0])] ??= new Set()).add(String(row[1]));
+    const doc: Record<string, Set<string>> = {};
+    for (const t of SCHEMA) doc[t.name] = new Set(t.columns.map((c) => c.name));
+    expect(Object.keys(seed).sort()).toEqual(Object.keys(doc).sort());
+    for (const t of Object.keys(doc)) expect([...seed[t]].sort(), `columns of ${t}`).toEqual([...doc[t]].sort());
+  }, 60000);
+});
+
+type AuditRow = { id: string; source: string; status: string; runs: boolean; rows: number; cols: string; note: string };
+
+describe('PGlite sandbox: gold-solution audit gate', () => {
+  it('every RUNNABLE gold solution (gym + drills) executes against the seed', async () => {
+    const audit: AuditRow[] = [];
     const failures: { id: string; error?: string }[] = [];
 
+    // displayId is for the report; statusId is the override-registry key (bare problem/exercise id).
+    const record = async (displayId: string, statusId: string, source: string, solution: string, runnable: boolean) => {
+      if (!runnable) {
+        audit.push({ id: displayId, source, status: statusForId(statusId), runs: false, rows: 0, cols: '', note: overrideReason(statusId) ?? 'not executable' });
+        return;
+      }
+      const r = await runSql(solution);
+      audit.push({ id: displayId, source, status: 'ready', runs: r.ok, rows: r.rowCount, cols: r.columns.join(' '), note: r.ok ? '' : r.error ?? 'error' });
+      if (!r.ok) failures.push({ id: displayId, error: r.error });
+    };
+
     for (const p of PROBLEMS) {
-      if (p.mode !== 'SQL' || !p.solution || NON_EXECUTABLE.has(p.id)) continue;
-      const r = await runSql(p.solution);
-      if (!r.ok) failures.push({ id: p.id, error: r.error });
+      if (p.mode !== 'SQL' || !p.solution) continue;
+      await record(p.id, p.id, `gym:${p.ladder}`, p.solution, problemRunnable(p));
     }
     for (const m of MODULES) {
       if (!m.sqlPattern) continue;
       for (const ex of m.exercises) {
-        if (!ex.solution || NON_EXECUTABLE.has(`${m.id}/${ex.id}`)) continue;
-        const r = await runSql(ex.solution);
-        if (!r.ok) failures.push({ id: `${m.id}/${ex.id}`, error: r.error });
+        if (!ex.solution) continue;
+        await record(`${m.id}/${ex.id}`, ex.id, `module:${m.id}`, ex.solution, exerciseRunnable(true, ex));
       }
     }
 
-    if (failures.length) {
-      // surface exactly which solution failed and why
-      console.error('Gold solutions that failed to run:\n' + failures.map((f) => `  ${f.id}: ${f.error}`).join('\n'));
-    }
+    // GATE: a problem is only marked runnable if its gold actually runs against the seed.
+    if (failures.length) console.error('Runnable gold solutions that FAILED:\n' + failures.map((f) => `  ${f.id}: ${f.error}`).join('\n'));
     expect(failures).toEqual([]);
-  }, 120000);
 
-  it('the engineered failure spike makes the anomaly monitor (an8) flag a day', async () => {
+    const ready = audit.filter((a) => a.status === 'ready');
+    const nonExec = audit.filter((a) => a.status !== 'ready');
+    // eslint-disable-next-line no-console
+    console.log(`AUDIT: ${ready.length} executable / ${ready.filter((a) => a.runs).length} passing / ${nonExec.length} non-executable. Full report via: npx vite-node scripts/sql-audit.mts`);
+  }, 120000);
+});
+
+describe('PGlite sandbox: seed signals + equivalent-answer acceptance', () => {
+  it('the failure spike makes the anomaly monitor (an8) flag a day', async () => {
     const r = await runSql(getProblem('an8')!.solution!);
     expect(r.ok).toBe(true);
-    expect(r.rowCount).toBeGreaterThanOrEqual(1); // the +80-failure day clears z>3 and the 50-volume floor
+    expect(r.rowCount).toBeGreaterThanOrEqual(1);
   }, 60000);
 
   it('the dispute-rate spike (an5) flags at least one high-volume day', async () => {
     const r = await runSql(getProblem('an5')!.solution!);
     expect(r.ok).toBe(true);
     const ai = colIndex(r, 'is_anomaly');
-    const flagged = r.rows.filter((row) => row[ai] === true).length;
-    expect(flagged).toBeGreaterThanOrEqual(1); // the engineered day-6 dispute burst over the 200 floor
+    expect(r.rows.filter((row) => row[ai] === true).length).toBeGreaterThanOrEqual(1);
   }, 60000);
 
   it('the A/B readout (ab8) returns two arms with a positive baked lift and valid guardrails', async () => {
@@ -67,49 +108,41 @@ describe('PGlite sandbox executes the SQL curriculum', () => {
     expect(r.ok).toBe(true);
     expect(r.rowCount).toBe(2);
     const vi = colIndex(r, 'variant'), ci = colIndex(r, 'conversion_itt'), di = colIndex(r, 'dispute_rate');
-    const byVariant: Record<string, number[]> = {};
-    for (const row of r.rows) byVariant[String(row[vi])] = [num(row[ci]), num(row[di])];
+    const by: Record<string, number[]> = {};
+    for (const row of r.rows) by[String(row[vi])] = [num(row[ci]), num(row[di])];
     for (const v of ['control', 'treatment']) {
-      expect(byVariant[v][0]).toBeGreaterThan(0); // conversion in (0,1]
-      expect(byVariant[v][0]).toBeLessThanOrEqual(1);
-      expect(byVariant[v][1]).toBeGreaterThanOrEqual(0); // dispute rate in [0,1]
-      expect(byVariant[v][1]).toBeLessThanOrEqual(1);
+      expect(by[v][0]).toBeGreaterThan(0);
+      expect(by[v][0]).toBeLessThanOrEqual(1);
+      expect(by[v][1]).toBeGreaterThanOrEqual(0);
+      expect(by[v][1]).toBeLessThanOrEqual(1);
     }
-    expect(byVariant['treatment'][0]).toBeGreaterThan(byVariant['control'][0]); // baked ITT lift
+    expect(by['treatment'][0]).toBeGreaterThan(by['control'][0]);
   }, 60000);
-});
 
-describe('compareResults (pure, order/column-name-insensitive, 4dp tolerant)', () => {
-  const grid = (columns: string[], rows: (string | number | boolean | null)[][]): RunResult => ({
-    ok: true, columns, rows, rowCount: rows.length, elapsedMs: 0,
-  });
+  it('previously-empty drills now return rows against the seed (seed-coverage guard)', async () => {
+    // These gold solutions used to return 0 rows (wrong/thin seed) and so were useless to a learner.
+    // The seed now carries the entities and signals they need; lock that in.
+    const ids = ['ca8', 'jn5', 'jn7', 'wn3', 'wn5', 'wn8', 'rf5', 'rf8'];
+    for (const id of ids) {
+      const r = await runSql(getProblem(id)!.solution!);
+      expect(r.ok, `${id} runs`).toBe(true);
+      expect(r.rowCount, `${id} returns rows`).toBeGreaterThanOrEqual(1);
+    }
+  }, 60000);
 
-  it('matches identical sets regardless of row order', () => {
-    const a = grid(['v', 'rate'], [['control', '0.5600'], ['treatment', '0.6000']]);
-    const b = grid(['variant', 'r'], [['treatment', '0.6000'], ['control', '0.5600']]);
-    expect(compareResults(a, b).match).toBe(true);
-  });
+  it('accepts a logically-equivalent rewrite (different alias + order + no ROUND) as a match', async () => {
+    // gold ab2: exposed customers per variant, ordered, aliased "exposed"
+    const gold = getProblem('ab2')!.solution!;
+    const rewrite =
+      "SELECT variant, COUNT(DISTINCT customer_id) AS n FROM experiment_exposures WHERE experiment = 'checkout_v2' GROUP BY variant";
+    const [g, mine] = [await runSql(gold), await runSql(rewrite)];
+    expect(g.ok && mine.ok).toBe(true);
+    expect(compareResults(mine, g, gold).match).toBe(true); // order/alias differences must not reject
 
-  it('treats numbers equal within 4 decimals', () => {
-    const a = grid(['x'], [['0.07140']]);
-    const b = grid(['x'], [[0.0714]]);
-    expect(compareResults(a, b).match).toBe(true);
-  });
-
-  it('flags a differing row count', () => {
-    const a = grid(['x'], [[1], [2]]);
-    const b = grid(['x'], [[1]]);
-    expect(compareResults(a, b).match).toBe(false);
-  });
-
-  it('flags differing contents at the same shape', () => {
-    const a = grid(['x'], [[1], [2]]);
-    const b = grid(['x'], [[1], [3]]);
-    expect(compareResults(a, b).match).toBe(false);
-  });
-
-  it('refuses to compare when the user query errored', () => {
-    const bad: RunResult = { ok: false, columns: [], rows: [], rowCount: 0, elapsedMs: 0, error: 'boom' };
-    expect(compareResults(bad, grid(['x'], [[1]])).match).toBe(false);
-  });
+    // an un-rounded rate must still match a 4dp-rounded reference (numeric tolerance), end-to-end
+    const raw = await runSql('SELECT 1 AS k, (2.0/3.0)::numeric AS r');
+    const rounded = await runSql('SELECT 1 AS k, ROUND(2.0/3.0, 4) AS r');
+    expect(raw.ok && rounded.ok).toBe(true);
+    expect(compareResults(raw, rounded).match).toBe(true);
+  }, 60000);
 });

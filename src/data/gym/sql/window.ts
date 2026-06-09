@@ -111,7 +111,7 @@ export const windowProblems: Problem[] = [
       "Aggregate GPV in a CTE, then RANK() OVER (ORDER BY gross DESC).",
       "RANK ties-then-skips; that's usually what 'rank' means."
     ],
-    "solution": "WITH gpv AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id\n)\nSELECT merchant_id, gross/100.0 AS gpv_usd,\n       RANK() OVER (ORDER BY gross DESC) AS rnk\nFROM gpv ORDER BY rnk LIMIT 10;",
+    "solution": "WITH gpv AS (\n  SELECT merchant_id, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id\n)\nSELECT merchant_id, gross/100.0 AS gpv_usd,\n       RANK() OVER (ORDER BY gross DESC) AS rnk\nFROM gpv ORDER BY rnk LIMIT 10;",
     "verify": {
       "grain": "One row per merchant (top 10).",
       "columns": [
@@ -277,7 +277,7 @@ export const windowProblems: Problem[] = [
       "Aggregate monthly GPV in a CTE (DATE_TRUNC).",
       "LAG(gross) OVER (PARTITION BY merchant_id ORDER BY month); guard with NULLIF."
     ],
-    "solution": "WITH m AS (\n  SELECT merchant_id, DATE_TRUNC('month', created_at) AS month, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='USD'\n  GROUP BY merchant_id, DATE_TRUNC('month', created_at)\n)\nSELECT merchant_id, month, gross/100.0 AS gpv_usd,\n       ROUND((gross - LAG(gross) OVER (PARTITION BY merchant_id ORDER BY month))::numeric\n             / NULLIF(LAG(gross) OVER (PARTITION BY merchant_id ORDER BY month),0)*100,1) AS mom_pct\nFROM m ORDER BY merchant_id, month;",
+    "solution": "WITH m AS (\n  SELECT merchant_id, DATE_TRUNC('month', created_at) AS month, SUM(amount) AS gross\n  FROM charges WHERE status='succeeded' AND currency='usd'\n  GROUP BY merchant_id, DATE_TRUNC('month', created_at)\n)\nSELECT merchant_id, month, gross/100.0 AS gpv_usd,\n       ROUND((gross - LAG(gross) OVER (PARTITION BY merchant_id ORDER BY month))::numeric\n             / NULLIF(LAG(gross) OVER (PARTITION BY merchant_id ORDER BY month),0)*100,1) AS mom_pct\nFROM m ORDER BY merchant_id, month;",
     "verify": {
       "grain": "One row per (merchant, month).",
       "columns": [

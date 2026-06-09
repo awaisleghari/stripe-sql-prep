@@ -85,7 +85,7 @@ export function SqlConsole({ solution, starter, label = 'Run it — live Postgre
     setRefResult(ref);
     setComparison(
       ref.ok
-        ? compareResults(mine, ref)
+        ? compareResults(mine, ref, solution)
         : { match: false, reason: "The reference for this drill doesn't run in the live sandbox (it may use a simplified or assumed column). Your query ran against the real schema above." }
     );
     setRunning(false);
@@ -148,14 +148,16 @@ export function SqlConsole({ solution, starter, label = 'Run it — live Postgre
           title={comparison.match ? 'Match' : 'Not a match yet'}
         >
           {comparison.reason}
-          <Text size="xs" c="dimmed" mt={4}>Heuristic set-comparison (order- and column-name-insensitive, numbers to 4dp) — not an authoritative grade.</Text>
+          {comparison.note && <Text size="sm" mt={6} fs="italic">{comparison.note}</Text>}
+          <Text size="xs" c="dimmed" mt={4}>Set-comparison: order-insensitive, column-name-insensitive, numbers to 4dp — not an authoritative grade.</Text>
         </Alert>
       )}
 
       {result && !result.ok && (
-        <Alert mt="md" variant="light" color="red" radius="md" icon={<IconAlertTriangle />} title="Query error">
+        <Alert mt="md" variant="light" color="red" radius="md" icon={<IconAlertTriangle />} title={result.explain ? result.explain.label : 'Query error'}>
           <Text className="mono" fz="xs">{result.error}</Text>
-          {result.hint && <Text size="sm" mt={6}>{result.hint}</Text>}
+          {result.explain?.hint && <Text size="sm" mt={6}><b>Likely cause:</b> {result.explain.hint}</Text>}
+          {result.explain && <Text size="sm" mt={4}><b>Try:</b> {result.explain.action}</Text>}
         </Alert>
       )}
 
