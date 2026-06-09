@@ -222,7 +222,7 @@ export const LADDERS: Ladder[] = [
     "id": "logic",
     "title": "Problem Solving & Data Logic",
     "category": "skill",
-    "module": null,
+    "module": "m17",
     "concept": "reasoning",
     "blurb": "Decompose any data question before you code: input, output, grain, metric, denominator, approach, validation.",
     "problemIds": [
@@ -240,7 +240,7 @@ export const LADDERS: Ladder[] = [
     "id": "py",
     "title": "Python Production Scripting",
     "category": "skill",
-    "module": null,
+    "module": "m18",
     "concept": "python",
     "blurb": "Clean Python for data tasks with lists, dicts, loops and sets — no pandas assumed.",
     "problemIds": [
@@ -274,7 +274,7 @@ export const LADDERS: Ladder[] = [
     "id": "exp",
     "title": "Experimentation & Causal",
     "category": "skill",
-    "module": null,
+    "module": "m19",
     "concept": "causal",
     "blurb": "A/B design and causal inference: treatment/control, guardrails, peeking, ITT, diff-in-diff, selection bias.",
     "problemIds": [
@@ -284,6 +284,22 @@ export const LADDERS: Ladder[] = [
       "exp4",
       "exp5",
       "exp6"
+    ]
+  },
+  {
+    "id": "obj",
+    "title": "Stripe Object Literacy",
+    "category": "skill",
+    "module": "m20",
+    "concept": "object",
+    "blurb": "Map a question to the right object: charges vs the ledger, refunds/disputes via the charge, GPV vs net vs MRR, payout reconciliation.",
+    "problemIds": [
+      "ob1",
+      "ob2",
+      "ob3",
+      "ob4",
+      "ob5",
+      "ob6"
     ]
   }
 ];

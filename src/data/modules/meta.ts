@@ -70,4 +70,20 @@ export const MODULE_META: Record<ModuleId, { why: string; outcome: string }> = {
     why: 'A/B results lie through the denominator, peeking and metric-shopping; the senior read is intention-to-treat with guardrails on a pre-registered metric.',
     outcome: 'compute ITT conversion and lift, pair the primary metric with a guardrail, and defend the no-peeking and significance caveats.',
   },
+  m17: {
+    why: 'Most wrong answers are the right query for the wrong question; the senior skill is decomposing a vague ask before writing any code.',
+    outcome: 'turn an ambiguous request into a precise computation — naming the grain, metric, denominator, source of truth, edge cases, and validation out loud.',
+  },
+  m18: {
+    why: 'Stripe Python screens hand you a list of dicts, not a DataFrame; clean standard-library code with the right data discipline is what scores.',
+    outcome: 'filter, group, deduplicate, and stream-aggregate records with comprehensions, defaultdict/Counter and sets — guarding divides and missing fields, no pandas.',
+  },
+  m19: {
+    why: 'DS/MLE screens probe uncertainty and evaluation; on imbalanced fraud data the wrong metric or threshold hides a useless model.',
+    outcome: 'state p-values and intervals precisely, choose precision/recall/PR-AUC and a cost-based threshold, and avoid leakage with temporal splits.',
+  },
+  m20: {
+    why: 'Most Stripe analytics mistakes are object errors — the wrong table — not SQL errors; knowing which object owns which fact is half the job.',
+    outcome: 'map a question to the right object, route refunds/disputes through the charge, separate GPV vs net vs MRR, and reconcile a payout through the ledger.',
+  },
 };

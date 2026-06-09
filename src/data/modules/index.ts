@@ -15,9 +15,14 @@ import { m12 } from './m12';
 import { m13 } from './m13';
 import { m14 } from './m14';
 import { m15 } from './m15';
+import { m17 } from './m17';
+import { m18 } from './m18';
+import { m19 } from './m19';
+import { m20 } from './m20';
 
-/** Ordered learning trail. Add a module file and append it here. */
-export const MODULES: Module[] = [m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15];
+/** Ordered learning trail. Add a module file and append it here. (m16 is a locked roadmap
+ *  placeholder — Mock Interview Mode — so it has no module object; m17-m20 are non-SQL modules.) */
+export const MODULES: Module[] = [m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15, m17, m18, m19, m20];
 
 const BY_ID = new Map<ModuleId, Module>(MODULES.map((m) => [m.id, m]));
 export function getModule(id: ModuleId | null | undefined): Module | undefined {

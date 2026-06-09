@@ -181,8 +181,8 @@ function ConceptTab({ m }: { m: Module }) {
       </Paper>
       {m.pysupport && (
         <Paper withBorder p="md" radius="md">
-          <SectionLabel mb={6}>The same logic in plain Python (no pandas)</SectionLabel>
-          <p className="page-sub" style={{ marginTop: 0 }}>If SQL feels abstract, this is the loop it compiles to in your head.</p>
+          <SectionLabel mb={6}>{m.sqlPattern ? 'The same logic in plain Python (no pandas)' : 'Reference implementation (plain Python — no pandas)'}</SectionLabel>
+          {m.sqlPattern && <p className="page-sub" style={{ marginTop: 0 }}>If SQL feels abstract, this is the loop it compiles to in your head.</p>}
           <CodeBlock>{m.pysupport}</CodeBlock>
         </Paper>
       )}

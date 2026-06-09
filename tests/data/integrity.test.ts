@@ -104,10 +104,49 @@ describe('Newly built SQL modules + ladders', () => {
   }
 });
 
+describe('Non-SQL modules (Day 7) + Object ladder', () => {
+  const titles: Record<string, string> = {
+    m17: 'Data Problem Solving from First Principles',
+    m18: 'Python Production Scripting',
+    m19: 'MLE & Statistics',
+    m20: 'Stripe Object Literacy',
+  };
+  for (const [id, title] of Object.entries(titles)) {
+    it(`${id} exists ("${title}"), is non-SQL (no runner), with a 5-question quiz`, () => {
+      const m = getModule(id);
+      expect(m).toBeTruthy();
+      expect(m!.title).toBe(title);
+      expect(m!.sqlPattern, `${id} must not have a SQL pattern (no SQL runner)`).toBeFalsy();
+      expect(m!.quiz.length).toBe(5);
+      expect(m!.exercises.length).toBeGreaterThanOrEqual(3);
+    });
+  }
+
+  it('skill ladders cross-link to their new modules', () => {
+    expect(LADDERS.find((l) => l.id === 'logic')!.module).toBe('m17');
+    expect(LADDERS.find((l) => l.id === 'py')!.module).toBe('m18');
+    expect(LADDERS.find((l) => l.id === 'exp')!.module).toBe('m19');
+  });
+
+  it('obj ladder drills m20 with 6 wired Object-mode problems', () => {
+    const l = LADDERS.find((x) => x.id === 'obj');
+    expect(l).toBeTruthy();
+    expect(l!.module).toBe('m20');
+    expect(l!.problemIds.length).toBe(6);
+    for (const pid of l!.problemIds) {
+      const p = getProblem(pid);
+      expect(p, `obj references ${pid}`).toBeTruthy();
+      expect(p!.ladder).toBe('obj');
+      expect(p!.mode).toBe('Object');
+      expect(p!.module).toBe('m20');
+    }
+  });
+});
+
 describe('migrated dataset size', () => {
-  it('has all 124 problems and 16 ladders', () => {
-    expect(PROBLEMS.length).toBe(124);
-    expect(LADDERS.length).toBe(16);
+  it('has all 130 problems and 17 ladders', () => {
+    expect(PROBLEMS.length).toBe(130);
+    expect(LADDERS.length).toBe(17);
   });
   it('every ladder problem-count matches its problemIds', () => {
     const byLadder: Record<string, number> = {};
@@ -174,8 +213,8 @@ describe('module data integrity', () => {
     }
   });
 
-  it('has all 16 migrated modules, each with concept, predicts, debugs and exercises', () => {
-    expect(MODULES.length).toBe(16);
+  it('has all 20 migrated modules, each with concept, predicts, debugs and exercises', () => {
+    expect(MODULES.length).toBe(20);
     for (const m of MODULES) {
       expect(m.concept, `concept for ${m.id}`).toBeTruthy();
       expect(m.predicts.length, `predicts for ${m.id}`).toBeGreaterThanOrEqual(1);

@@ -15,11 +15,12 @@ import { logicProblems } from './logic';
 import { pythonProblems } from './python';
 import { productProblems } from './product';
 import { experimentProblems } from './experiment';
+import { objectProblems } from './object';
 
 export { LADDERS } from './ladders';
 
 /** All gym problems, in ladder order. Add a category file's array to this list. */
-export const PROBLEMS: Problem[] = [...conditionalProblems, ...joinsProblems, ...cteProblems, ...windowProblems, ...datetimeProblems, ...funnelProblems, ...retentionProblems, ...revenueProblems, ...refundsProblems, ...recoveryProblems, ...anomalyProblems, ...abProblems, ...logicProblems, ...pythonProblems, ...productProblems, ...experimentProblems];
+export const PROBLEMS: Problem[] = [...conditionalProblems, ...joinsProblems, ...cteProblems, ...windowProblems, ...datetimeProblems, ...funnelProblems, ...retentionProblems, ...revenueProblems, ...refundsProblems, ...recoveryProblems, ...anomalyProblems, ...abProblems, ...logicProblems, ...pythonProblems, ...productProblems, ...experimentProblems, ...objectProblems];
 
 const BY_ID = new Map<ProblemId, Problem>(PROBLEMS.map((p) => [p.id, p]));
 export function getProblem(id: ProblemId | null | undefined): Problem | undefined {

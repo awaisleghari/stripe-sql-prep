@@ -64,4 +64,14 @@ export const MODULE_ROADMAP: RoadmapDay[] = [
       { id: 'm16', locked: true, lockedTitle: 'Mock Interview Mode' },
     ],
   },
+  {
+    day: 'Day 7',
+    theme: 'Beyond SQL',
+    slots: [
+      { id: 'm17', locked: false },
+      { id: 'm18', locked: false },
+      { id: 'm19', locked: false },
+      { id: 'm20', locked: false },
+    ],
+  },
 ];
